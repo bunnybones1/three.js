@@ -360,6 +360,7 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters,
 			parameters.metalnessMap ? '#define USE_METALNESSMAP' : '',
 			parameters.alphaMap ? '#define USE_ALPHAMAP' : '',
 			parameters.vertexColors ? '#define USE_COLOR' : '',
+			parameters.vertexColorsGlow ? '#define USE_COLOR_GLOW' : '',
 
 			parameters.flatShading ? '#define FLAT_SHADED' : '',
 
@@ -393,6 +394,11 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters,
 			'#ifdef USE_COLOR',
 
 			'	attribute vec3 color;',
+
+			'#endif',
+			'#ifdef USE_COLOR_GLOW',
+
+			'	attribute vec3 colorGlow;',
 
 			'#endif',
 
@@ -467,6 +473,7 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters,
 			parameters.metalnessMap ? '#define USE_METALNESSMAP' : '',
 			parameters.alphaMap ? '#define USE_ALPHAMAP' : '',
 			parameters.vertexColors ? '#define USE_COLOR' : '',
+			parameters.vertexColorsGlow ? '#define USE_COLOR_GLOW' : '',
 
 			parameters.gradientMap ? '#define USE_GRADIENTMAP' : '',
 

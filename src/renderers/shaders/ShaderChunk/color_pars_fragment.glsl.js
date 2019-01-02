@@ -4,4 +4,9 @@ export default /* glsl */`
 	varying vec3 vColor;
 
 #endif
+#ifdef USE_COLOR_GLOW
+
+	varying vec3 vColorGlow;
+
+#endif
 `;

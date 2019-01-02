@@ -597,6 +597,7 @@ function WebGLRenderer( parameters ) {
 		if ( object.hasNormals && ! buffers.normal ) buffers.normal = _gl.createBuffer();
 		if ( object.hasUvs && ! buffers.uv ) buffers.uv = _gl.createBuffer();
 		if ( object.hasColors && ! buffers.color ) buffers.color = _gl.createBuffer();
+		if ( object.hasColorsGlow && ! buffers.colorGlow ) buffers.colorGlow = _gl.createBuffer();
 
 		var programAttributes = program.getAttributes();
 
@@ -637,6 +638,16 @@ function WebGLRenderer( parameters ) {
 
 			state.enableAttribute( programAttributes.color );
 			_gl.vertexAttribPointer( programAttributes.color, 3, _gl.FLOAT, false, 0, 0 );
+
+		}
+
+		if ( object.hasColorsGlow ) {
+
+			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.colorGlow );
+			_gl.bufferData( _gl.ARRAY_BUFFER, object.colorGlowArray, _gl.DYNAMIC_DRAW );
+
+			state.enableAttribute( programAttributes.colorGlow );
+			_gl.vertexAttribPointer( programAttributes.colorGlow, 3, _gl.FLOAT, false, 0, 0 );
 
 		}
 

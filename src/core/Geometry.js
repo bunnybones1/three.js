@@ -223,6 +223,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		var positions = attributes.position.array;
 		var normals = attributes.normal !== undefined ? attributes.normal.array : undefined;
 		var colors = attributes.color !== undefined ? attributes.color.array : undefined;
+		var colorsGlow = attributes.colorGlow !== undefined ? attributes.colorGlow.array : undefined;
 		var uvs = attributes.uv !== undefined ? attributes.uv.array : undefined;
 		var uvs2 = attributes.uv2 !== undefined ? attributes.uv2.array : undefined;
 
@@ -235,6 +236,11 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			if ( colors !== undefined ) {
 
 				scope.colors.push( new Color().fromArray( colors, i ) );
+
+			}
+			if ( colorsGlow !== undefined ) {
+
+				scope.colorsGlow.push( new Color().fromArray( colorsGlow, i ) );
 
 			}
 

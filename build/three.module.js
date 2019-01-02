@@ -6018,13 +6018,13 @@ var clipping_planes_pars_vertex = "#if NUM_CLIPPING_PLANES > 0 && ! defined( PHY
 
 var clipping_planes_vertex = "#if NUM_CLIPPING_PLANES > 0 && ! defined( PHYSICAL ) && ! defined( PHONG ) && ! defined( MATCAP )\n\tvViewPosition = - mvPosition.xyz;\n#endif";
 
-var color_fragment = "#ifdef USE_COLOR\n\tdiffuseColor.rgb *= vColor;\n#endif";
+var color_fragment = "#ifdef USE_COLOR\n\tdiffuseColor.rgb *= vColor;\n#endif\n#ifdef USE_COLOR_GLOW\n\tdiffuseColor.rgb += vColorGlow;\n#endif";
 
-var color_pars_fragment = "#ifdef USE_COLOR\n\tvarying vec3 vColor;\n#endif";
+var color_pars_fragment = "#ifdef USE_COLOR\n\tvarying vec3 vColor;\n#endif\n#ifdef USE_COLOR_GLOW\n\tvarying vec3 vColorGlow;\n#endif";
 
-var color_pars_vertex = "#ifdef USE_COLOR\n\tvarying vec3 vColor;\n#endif";
+var color_pars_vertex = "#ifdef USE_COLOR\n\tvarying vec3 vColor;\n#endif\n#ifdef USE_COLOR_GLOW\n\tvarying vec3 vColorGlow;\n#endif";
 
-var color_vertex = "#ifdef USE_COLOR\n\tvColor.xyz = color.xyz;\n#endif";
+var color_vertex = "#ifdef USE_COLOR\n\tvColor.xyz = color.xyz;\n#endif\n#ifdef USE_COLOR_GLOW\n\tvColorGlow.xyz = colorGlow.xyz;\n#endif";
 
 var common = "#define PI 3.14159265359\n#define PI2 6.28318530718\n#define PI_HALF 1.5707963267949\n#define RECIPROCAL_PI 0.31830988618\n#define RECIPROCAL_PI2 0.15915494\n#define LOG2 1.442695\n#define EPSILON 1e-6\n#define saturate(a) clamp( a, 0.0, 1.0 )\n#define whiteCompliment(a) ( 1.0 - saturate( a ) )\nfloat pow2( const in float x ) { return x*x; }\nfloat pow3( const in float x ) { return x*x*x; }\nfloat pow4( const in float x ) { float x2 = x*x; return x2*x2; }\nfloat average( const in vec3 color ) { return dot( color, vec3( 0.3333 ) ); }\nhighp float rand( const in vec2 uv ) {\n\tconst highp float a = 12.9898, b = 78.233, c = 43758.5453;\n\thighp float dt = dot( uv.xy, vec2( a,b ) ), sn = mod( dt, PI );\n\treturn fract(sin(sn) * c);\n}\nstruct IncidentLight {\n\tvec3 color;\n\tvec3 direction;\n\tbool visible;\n};\nstruct ReflectedLight {\n\tvec3 directDiffuse;\n\tvec3 directSpecular;\n\tvec3 indirectDiffuse;\n\tvec3 indirectSpecular;\n};\nstruct GeometricContext {\n\tvec3 position;\n\tvec3 normal;\n\tvec3 viewDir;\n};\nvec3 transformDirection( in vec3 dir, in mat4 matrix ) {\n\treturn normalize( ( matrix * vec4( dir, 0.0 ) ).xyz );\n}\nvec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {\n\treturn normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );\n}\nvec3 projectOnPlane(in vec3 point, in vec3 pointOnPlane, in vec3 planeNormal ) {\n\tfloat distance = dot( planeNormal, point - pointOnPlane );\n\treturn - distance * planeNormal + point;\n}\nfloat sideOfPlane( in vec3 point, in vec3 pointOnPlane, in vec3 planeNormal ) {\n\treturn sign( dot( point - pointOnPlane, planeNormal ) );\n}\nvec3 linePlaneIntersect( in vec3 pointOnLine, in vec3 lineDirection, in vec3 pointOnPlane, in vec3 planeNormal ) {\n\treturn lineDirection * ( dot( planeNormal, pointOnPlane - pointOnLine ) / dot( planeNormal, lineDirection ) ) + pointOnLine;\n}\nmat3 transposeMat3( const in mat3 m ) {\n\tmat3 tmp;\n\ttmp[ 0 ] = vec3( m[ 0 ].x, m[ 1 ].x, m[ 2 ].x );\n\ttmp[ 1 ] = vec3( m[ 0 ].y, m[ 1 ].y, m[ 2 ].y );\n\ttmp[ 2 ] = vec3( m[ 0 ].z, m[ 1 ].z, m[ 2 ].z );\n\treturn tmp;\n}\nfloat linearToRelativeLuminance( const in vec3 color ) {\n\tvec3 weights = vec3( 0.2126, 0.7152, 0.0722 );\n\treturn dot( weights, color.rgb );\n}";
 
@@ -9242,6 +9242,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		var positions = attributes.position.array;
 		var normals = attributes.normal !== undefined ? attributes.normal.array : undefined;
 		var colors = attributes.color !== undefined ? attributes.color.array : undefined;
+		var colorsGlow = attributes.colorGlow !== undefined ? attributes.colorGlow.array : undefined;
 		var uvs = attributes.uv !== undefined ? attributes.uv.array : undefined;
 		var uvs2 = attributes.uv2 !== undefined ? attributes.uv2.array : undefined;
 
@@ -9254,6 +9255,11 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			if ( colors !== undefined ) {
 
 				scope.colors.push( new Color().fromArray( colors, i ) );
+
+			}
+			if ( colorsGlow !== undefined ) {
+
+				scope.colorsGlow.push( new Color().fromArray( colorsGlow, i ) );
 
 			}
 
@@ -11445,10 +11451,11 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 			var positions = new Float32BufferAttribute( geometry.vertices.length * 3, 3 );
 			var colors = new Float32BufferAttribute( geometry.colors.length * 3, 3 );
+			var colorsGlow = new Float32BufferAttribute( geometry.colorsGlow.length * 3, 3 );
 
 			this.addAttribute( 'position', positions.copyVector3sArray( geometry.vertices ) );
 			this.addAttribute( 'color', colors.copyColorsArray( geometry.colors ) );
-
+			this.addAttribute( 'colorGlow', colorsGlow.copyColorsArray( geometry.colorsGlow ) );
 			if ( geometry.lineDistances && geometry.lineDistances.length === geometry.vertices.length ) {
 
 				var lineDistances = new Float32BufferAttribute( geometry.lineDistances.length, 1 );
@@ -11581,6 +11588,21 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 			}
 
 			geometry.colorsNeedUpdate = false;
+
+		}
+
+		if ( geometry.colorsGlowNeedUpdate === true ) {
+
+			attribute = this.attributes.colorGlow;
+
+			if ( attribute !== undefined ) {
+
+				attribute.copyColorsArray( geometry.colorsGlow );
+				attribute.needsUpdate = true;
+
+			}
+
+			geometry.colorsGlowNeedUpdate = false;
 
 		}
 
@@ -12605,6 +12627,7 @@ function Material() {
 	this.side = FrontSide;
 	this.flatShading = false;
 	this.vertexColors = NoColors; // THREE.NoColors, THREE.VertexColors, THREE.FaceColors
+	this.vertexColorsGlow = NoColors; // THREE.NoColors, THREE.VertexColors, THREE.FaceColors
 
 	this.opacity = 1;
 	this.transparent = false;
@@ -12894,6 +12917,7 @@ Material.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		this.side = source.side;
 		this.flatShading = source.flatShading;
 		this.vertexColors = source.vertexColors;
+		this.vertexColorsGlow = source.vertexColorsGlow;
 
 		this.opacity = source.opacity;
 		this.transparent = source.transparent;
@@ -17003,6 +17027,7 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters,
 			parameters.metalnessMap ? '#define USE_METALNESSMAP' : '',
 			parameters.alphaMap ? '#define USE_ALPHAMAP' : '',
 			parameters.vertexColors ? '#define USE_COLOR' : '',
+			parameters.vertexColorsGlow ? '#define USE_COLOR_GLOW' : '',
 
 			parameters.flatShading ? '#define FLAT_SHADED' : '',
 
@@ -17036,6 +17061,11 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters,
 			'#ifdef USE_COLOR',
 
 			'	attribute vec3 color;',
+
+			'#endif',
+			'#ifdef USE_COLOR_GLOW',
+
+			'	attribute vec3 colorGlow;',
 
 			'#endif',
 
@@ -17110,6 +17140,7 @@ function WebGLProgram( renderer, extensions, code, material, shader, parameters,
 			parameters.metalnessMap ? '#define USE_METALNESSMAP' : '',
 			parameters.alphaMap ? '#define USE_ALPHAMAP' : '',
 			parameters.vertexColors ? '#define USE_COLOR' : '',
+			parameters.vertexColorsGlow ? '#define USE_COLOR_GLOW' : '',
 
 			parameters.gradientMap ? '#define USE_GRADIENTMAP' : '',
 
@@ -17405,7 +17436,7 @@ function WebGLPrograms( renderer, extensions, capabilities ) {
 		"precision", "supportsVertexTextures", "map", "mapEncoding", "matcap", "matcapEncoding", "envMap", "envMapMode", "envMapEncoding",
 		"lightMap", "aoMap", "emissiveMap", "emissiveMapEncoding", "bumpMap", "normalMap", "objectSpaceNormalMap", "displacementMap", "specularMap",
 		"roughnessMap", "metalnessMap", "gradientMap",
-		"alphaMap", "combine", "vertexColors", "fog", "useFog", "fogExp",
+		"alphaMap", "combine", "vertexColors", "vertexColorsGlow", "fog", "useFog", "fogExp",
 		"flatShading", "sizeAttenuation", "logarithmicDepthBuffer", "skinning",
 		"maxBones", "useVertexTexture", "morphTargets", "morphNormals",
 		"maxMorphTargets", "maxMorphNormals", "premultipliedAlpha",
@@ -17538,6 +17569,7 @@ function WebGLPrograms( renderer, extensions, capabilities ) {
 			combine: material.combine,
 
 			vertexColors: material.vertexColors,
+			vertexColorsGlow: material.vertexColorsGlow,
 
 			fog: !! fog,
 			useFog: material.fog,
@@ -22672,6 +22704,7 @@ function WebGLRenderer( parameters ) {
 		if ( object.hasNormals && ! buffers.normal ) buffers.normal = _gl.createBuffer();
 		if ( object.hasUvs && ! buffers.uv ) buffers.uv = _gl.createBuffer();
 		if ( object.hasColors && ! buffers.color ) buffers.color = _gl.createBuffer();
+		if ( object.hasColorsGlow && ! buffers.colorGlow ) buffers.colorGlow = _gl.createBuffer();
 
 		var programAttributes = program.getAttributes();
 
@@ -22712,6 +22745,16 @@ function WebGLRenderer( parameters ) {
 
 			state.enableAttribute( programAttributes.color );
 			_gl.vertexAttribPointer( programAttributes.color, 3, 5126, false, 0, 0 );
+
+		}
+
+		if ( object.hasColorsGlow ) {
+
+			_gl.bindBuffer( 34962, buffers.colorGlow );
+			_gl.bufferData( 34962, object.colorGlowArray, 35048 );
+
+			state.enableAttribute( programAttributes.colorGlow );
+			_gl.vertexAttribPointer( programAttributes.colorGlow, 3, 5126, false, 0, 0 );
 
 		}
 

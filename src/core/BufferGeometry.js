@@ -304,10 +304,11 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 			var positions = new Float32BufferAttribute( geometry.vertices.length * 3, 3 );
 			var colors = new Float32BufferAttribute( geometry.colors.length * 3, 3 );
+			var colorsGlow = new Float32BufferAttribute( geometry.colorsGlow.length * 3, 3 );
 
 			this.addAttribute( 'position', positions.copyVector3sArray( geometry.vertices ) );
 			this.addAttribute( 'color', colors.copyColorsArray( geometry.colors ) );
-
+			this.addAttribute( 'colorGlow', colorsGlow.copyColorsArray( geometry.colorsGlow ) );
 			if ( geometry.lineDistances && geometry.lineDistances.length === geometry.vertices.length ) {
 
 				var lineDistances = new Float32BufferAttribute( geometry.lineDistances.length, 1 );
@@ -440,6 +441,21 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 			}
 
 			geometry.colorsNeedUpdate = false;
+
+		}
+
+		if ( geometry.colorsGlowNeedUpdate === true ) {
+
+			attribute = this.attributes.colorGlow;
+
+			if ( attribute !== undefined ) {
+
+				attribute.copyColorsArray( geometry.colorsGlow );
+				attribute.needsUpdate = true;
+
+			}
+
+			geometry.colorsGlowNeedUpdate = false;
 
 		}
 

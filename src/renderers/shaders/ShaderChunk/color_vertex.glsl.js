@@ -4,4 +4,9 @@ export default /* glsl */`
 	vColor.xyz = color.xyz;
 
 #endif
+#ifdef USE_COLOR_GLOW
+
+	vColorGlow.xyz = colorGlow.xyz;
+
+#endif
 `;

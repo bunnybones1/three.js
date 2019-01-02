@@ -25,6 +25,7 @@ function Material() {
 	this.side = FrontSide;
 	this.flatShading = false;
 	this.vertexColors = NoColors; // THREE.NoColors, THREE.VertexColors, THREE.FaceColors
+	this.vertexColorsGlow = NoColors; // THREE.NoColors, THREE.VertexColors, THREE.FaceColors
 
 	this.opacity = 1;
 	this.transparent = false;
@@ -314,6 +315,7 @@ Material.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		this.side = source.side;
 		this.flatShading = source.flatShading;
 		this.vertexColors = source.vertexColors;
+		this.vertexColorsGlow = source.vertexColorsGlow;
 
 		this.opacity = source.opacity;
 		this.transparent = source.transparent;
