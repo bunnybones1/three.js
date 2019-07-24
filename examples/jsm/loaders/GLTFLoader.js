@@ -75,18 +75,23 @@ import {
 
 var GLTFLoader = ( function () {
 
-	function GLTFLoader( manager ) {
+	function GLTFLoader( manager, textureLoader, leaveFormatAlone) {
 
 		Loader.call( this, manager );
 
 		this.dracoLoader = null;
 		this.ddsLoader = null;
-
+		this.textureLoader = textureLoader
+		this.leaveFormatAlone = leaveFormatAlone
 	}
 
 	GLTFLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 
 		constructor: GLTFLoader,
+
+		textureLoader: null,
+
+		leaveFormatAlone: false,
 
 		load: function ( url, onLoad, onProgress, onError ) {
 
@@ -277,7 +282,9 @@ var GLTFLoader = ( function () {
 
 				path: path || this.resourcePath || '',
 				crossOrigin: this.crossOrigin,
-				manager: this.manager
+				manager: this.manager,
+				textureLoader: this.textureLoader,
+				leaveFormatAlone: this.leaveFormatAlone
 
 			} );
 
@@ -1496,8 +1503,14 @@ var GLTFLoader = ( function () {
 		// BufferGeometry caching
 		this.primitiveCache = {};
 
-		this.textureLoader = new TextureLoader( this.options.manager );
+		if(options.textureLoader) {
+			this.textureLoader = options.textureLoader;
+		} else {
+			this.textureLoader = new THREE.TextureLoader( this.options.manager );
+		}
 		this.textureLoader.setCrossOrigin( this.options.crossOrigin );
+
+		this.leaveFormatAlone = options.leaveFormatAlone;
 
 		this.fileLoader = new FileLoader( this.options.manager );
 		this.fileLoader.setResponseType( 'arraybuffer' );
@@ -1916,6 +1929,7 @@ var GLTFLoader = ( function () {
 		var json = this.json;
 		var options = this.options;
 		var textureLoader = this.textureLoader;
+		var leaveFormatAlone = this.leaveFormatAlone;
 
 		var URL = window.URL || window.webkitURL;
 
@@ -1983,12 +1997,12 @@ var GLTFLoader = ( function () {
 
 			}
 
-			texture.flipY = false;
-
 			if ( textureDef.name !== undefined ) texture.name = textureDef.name;
 
+			texture.flipY = false;
+
 			// Ignore unknown mime types, like DDS files.
-			if ( source.mimeType in MIME_TYPE_FORMATS ) {
+			if (!leaveFormatAlone && source.mimeType in MIME_TYPE_FORMATS ) {
 
 				texture.format = MIME_TYPE_FORMATS[ source.mimeType ];
 
@@ -2001,7 +2015,6 @@ var GLTFLoader = ( function () {
 			texture.minFilter = WEBGL_FILTERS[ sampler.minFilter ] || LinearMipmapLinearFilter;
 			texture.wrapS = WEBGL_WRAPPINGS[ sampler.wrapS ] || RepeatWrapping;
 			texture.wrapT = WEBGL_WRAPPINGS[ sampler.wrapT ] || RepeatWrapping;
-
 			return texture;
 
 		} );

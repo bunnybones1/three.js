@@ -3,7 +3,8 @@ import {
 	Camera,
 	Loader,
 	LoadingManager,
-	Scene
+	Scene,
+	TextureLoader
 } from '../../../src/Three';
 
 import { DRACOLoader } from './DRACOLoader';
@@ -19,7 +20,7 @@ export interface GLTF {
 
 export class GLTFLoader extends Loader {
 
-	constructor( manager?: LoadingManager );
+	constructor( manager?: LoadingManager, textureLoader?: TextureLoader, leaveFormatAlone?: boolean );
 	dracoLoader: DRACOLoader | null;
 	ddsLoader: DDSLoader | null;
 
