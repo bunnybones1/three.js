@@ -53,7 +53,7 @@ export interface MaterialParameters {
 	stencilWrite?: boolean;
 	stencilFunc?: StencilFunc;
 	stencilRef?: number;
-	stencilMask?: number;
+	stencilFuncMask?: number;
 	stencilFail?: StencilOp;
 	stencilZFail?: StencilOp;
 	stencilZPass?: StencilOp;
