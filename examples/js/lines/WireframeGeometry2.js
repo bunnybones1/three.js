@@ -1,24 +1,38 @@
 /**
- * @author WestLangley / http://github.com/WestLangley
- *
+ * Generated from 'examples/jsm/lines/WireframeGeometry2.js'
  */
 
-THREE.WireframeGeometry2 = function ( geometry ) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three'), require('/Users/Tomasz/Documents/repos/three.js/examples/jsm/lines/LineSegmentsGeometry.js')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three', '/Users/Tomasz/Documents/repos/three.js/examples/jsm/lines/LineSegmentsGeometry.js'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE, global.THREE));
+}(this, function (exports, THREE, LineSegmentsGeometry_js) { 'use strict';
 
-	THREE.LineSegmentsGeometry.call( this );
+	/**
+	 * @author WestLangley / http://github.com/WestLangley
+	 *
+	 */
 
-	this.type = 'WireframeGeometry2';
+	var WireframeGeometry2 = function ( geometry ) {
 
-	this.fromWireframeGeometry( new THREE.WireframeGeometry( geometry ) );
+		LineSegmentsGeometry_js.LineSegmentsGeometry.call( this );
 
-	// set colors, maybe
+		this.type = 'WireframeGeometry2';
 
-};
+		this.fromWireframeGeometry( new THREE.WireframeGeometry( geometry ) );
 
-THREE.WireframeGeometry2.prototype = Object.assign( Object.create( THREE.LineSegmentsGeometry.prototype ), {
+		// set colors, maybe
 
-	constructor: THREE.WireframeGeometry2,
+	};
 
-	isWireframeGeometry2: true
+	WireframeGeometry2.prototype = Object.assign( Object.create( LineSegmentsGeometry_js.LineSegmentsGeometry.prototype ), {
 
-} );
+		constructor: WireframeGeometry2,
+
+		isWireframeGeometry2: true
+
+	} );
+
+	exports.WireframeGeometry2 = WireframeGeometry2;
+
+}));

@@ -1,47 +1,63 @@
 /**
- * @author wongbryan / http://wongbryan.github.io
- *
- * Pixelation shader
+ * Generated from 'examples/jsm/shaders/PixelShader.js'
  */
 
-THREE.PixelShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author wongbryan / http://wongbryan.github.io
+	 *
+	 * Pixelation shader
+	 */
 
-		"tDiffuse": { value: null },
-		"resolution": { value: null },
-		"pixelSize": { value: 1. },
 
-	},
 
-	vertexShader: [
+	var PixelShader = {
 
-		"varying highp vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"tDiffuse": { value: null },
+			"resolution": { value: null },
+			"pixelSize": { value: 1. },
 
-		"vUv = uv;",
-		"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		},
 
-		"}"
+		vertexShader: [
 
-	].join( "\n" ),
+			"varying highp vec2 vUv;",
 
-	fragmentShader: [
+			"void main() {",
 
-		"uniform sampler2D tDiffuse;",
-		"uniform float pixelSize;",
-		"uniform vec2 resolution;",
+			"vUv = uv;",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"varying highp vec2 vUv;",
+			"}"
 
-		"void main(){",
+		].join( "\n" ),
 
-		"vec2 dxy = pixelSize / resolution;",
-		"vec2 coord = dxy * floor( vUv / dxy );",
-		"gl_FragColor = texture2D(tDiffuse, coord);",
+		fragmentShader: [
 
-		"}"
+			"uniform sampler2D tDiffuse;",
+			"uniform float pixelSize;",
+			"uniform vec2 resolution;",
 
-	].join( "\n" )
-};
+			"varying highp vec2 vUv;",
+
+			"void main(){",
+
+			"vec2 dxy = pixelSize / resolution;",
+			"vec2 coord = dxy * floor( vUv / dxy );",
+			"gl_FragColor = texture2D(tDiffuse, coord);",
+
+			"}"
+
+		].join( "\n" )
+	};
+
+	exports.PixelShader = PixelShader;
+
+}));

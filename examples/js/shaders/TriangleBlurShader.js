@@ -1,72 +1,86 @@
 /**
- * @author zz85 / http://www.lab4games.net/zz85/blog
- *
- * Triangle blur shader
- * based on glfx.js triangle blur shader
- * https://github.com/evanw/glfx.js
- *
- * A basic blur filter, which convolves the image with a
- * pyramid filter. The pyramid filter is separable and is applied as two
- * perpendicular triangle filters.
+ * Generated from 'examples/jsm/shaders/TriangleBlurShader.js'
  */
 
-THREE.TriangleBlurShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author zz85 / http://www.lab4games.net/zz85/blog
+	 *
+	 * Triangle blur shader
+	 * based on glfx.js triangle blur shader
+	 * https://github.com/evanw/glfx.js
+	 *
+	 * A basic blur filter, which convolves the image with a
+	 * pyramid filter. The pyramid filter is separable and is applied as two
+	 * perpendicular triangle filters.
+	 */
 
-		"texture": { value: null },
-		"delta": { value: new THREE.Vector2( 1, 1 ) }
+	var TriangleBlurShader = {
 
-	},
+		uniforms: {
 
-	vertexShader: [
+			"texture": { value: null },
+			"delta": { value: new THREE.Vector2( 1, 1 ) }
 
-		"varying vec2 vUv;",
+		},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"varying vec2 vUv;",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" ),
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"#include <common>",
+		].join( "\n" ),
 
-		"#define ITERATIONS 10.0",
+		fragmentShader: [
 
-		"uniform sampler2D texture;",
-		"uniform vec2 delta;",
+			"#include <common>",
 
-		"varying vec2 vUv;",
+			"#define ITERATIONS 10.0",
 
-		"void main() {",
+			"uniform sampler2D texture;",
+			"uniform vec2 delta;",
 
-		"	vec4 color = vec4( 0.0 );",
+			"varying vec2 vUv;",
 
-		"	float total = 0.0;",
+			"void main() {",
 
-		// randomize the lookup values to hide the fixed number of samples
+			"	vec4 color = vec4( 0.0 );",
 
-		"	float offset = rand( vUv );",
+			"	float total = 0.0;",
 
-		"	for ( float t = -ITERATIONS; t <= ITERATIONS; t ++ ) {",
+			// randomize the lookup values to hide the fixed number of samples
 
-		"		float percent = ( t + offset - 0.5 ) / ITERATIONS;",
-		"		float weight = 1.0 - abs( percent );",
+			"	float offset = rand( vUv );",
 
-		"		color += texture2D( texture, vUv + delta * percent ) * weight;",
-		"		total += weight;",
+			"	for ( float t = -ITERATIONS; t <= ITERATIONS; t ++ ) {",
 
-		"	}",
+			"		float percent = ( t + offset - 0.5 ) / ITERATIONS;",
+			"		float weight = 1.0 - abs( percent );",
 
-		"	gl_FragColor = color / total;",
+			"		color += texture2D( texture, vUv + delta * percent ) * weight;",
+			"		total += weight;",
 
-		"}"
+			"	}",
 
-	].join( "\n" )
+			"	gl_FragColor = color / total;",
 
-};
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.TriangleBlurShader = TriangleBlurShader;
+
+}));

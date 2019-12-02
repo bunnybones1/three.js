@@ -1,56 +1,72 @@
 /**
- * @author felixturner / http://airtight.cc/
- *
- * RGB Shift Shader
- * Shifts red and blue channels from center in opposite directions
- * Ported from http://kriss.cx/tom/2009/05/rgb-shift/
- * by Tom Butterworth / http://kriss.cx/tom/
- *
- * amount: shift distance (1 is width of input)
- * angle: shift angle in radians
+ * Generated from 'examples/jsm/shaders/RGBShiftShader.js'
  */
 
-THREE.RGBShiftShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author felixturner / http://airtight.cc/
+	 *
+	 * RGB Shift Shader
+	 * Shifts red and blue channels from center in opposite directions
+	 * Ported from http://kriss.cx/tom/2009/05/rgb-shift/
+	 * by Tom Butterworth / http://kriss.cx/tom/
+	 *
+	 * amount: shift distance (1 is width of input)
+	 * angle: shift angle in radians
+	 */
 
-		"tDiffuse": { value: null },
-		"amount": { value: 0.005 },
-		"angle": { value: 0.0 }
 
-	},
 
-	vertexShader: [
+	var RGBShiftShader = {
 
-		"varying vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"tDiffuse": { value: null },
+			"amount": { value: 0.005 },
+			"angle": { value: 0.0 }
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		},
 
-		"}"
+		vertexShader: [
 
-	].join( "\n" ),
+			"varying vec2 vUv;",
 
-	fragmentShader: [
+			"void main() {",
 
-		"uniform sampler2D tDiffuse;",
-		"uniform float amount;",
-		"uniform float angle;",
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"varying vec2 vUv;",
+			"}"
 
-		"void main() {",
+		].join( "\n" ),
 
-		"	vec2 offset = amount * vec2( cos(angle), sin(angle));",
-		"	vec4 cr = texture2D(tDiffuse, vUv + offset);",
-		"	vec4 cga = texture2D(tDiffuse, vUv);",
-		"	vec4 cb = texture2D(tDiffuse, vUv - offset);",
-		"	gl_FragColor = vec4(cr.r, cga.g, cb.b, cga.a);",
+		fragmentShader: [
 
-		"}"
+			"uniform sampler2D tDiffuse;",
+			"uniform float amount;",
+			"uniform float angle;",
 
-	].join( "\n" )
+			"varying vec2 vUv;",
 
-};
+			"void main() {",
+
+			"	vec2 offset = amount * vec2( cos(angle), sin(angle));",
+			"	vec4 cr = texture2D(tDiffuse, vUv + offset);",
+			"	vec4 cga = texture2D(tDiffuse, vUv);",
+			"	vec4 cb = texture2D(tDiffuse, vUv - offset);",
+			"	gl_FragColor = vec4(cr.r, cga.g, cb.b, cga.a);",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.RGBShiftShader = RGBShiftShader;
+
+}));

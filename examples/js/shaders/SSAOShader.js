@@ -1,295 +1,311 @@
 /**
- * @author Mugen87 / https://github.com/Mugen87
- *
- * References:
- * http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
- * https://learnopengl.com/Advanced-Lighting/SSAO
- * https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl
+ * Generated from 'examples/jsm/shaders/SSAOShader.js'
  */
 
-THREE.SSAOShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	defines: {
-		"PERSPECTIVE_CAMERA": 1,
-		"KERNEL_SIZE": 32
-	},
+	/**
+	 * @author Mugen87 / https://github.com/Mugen87
+	 *
+	 * References:
+	 * http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
+	 * https://learnopengl.com/Advanced-Lighting/SSAO
+	 * https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl
+	 */
 
-	uniforms: {
+	var SSAOShader = {
 
-		"tDiffuse": { value: null },
-		"tNormal": { value: null },
-		"tDepth": { value: null },
-		"tNoise": { value: null },
-		"kernel": { value: null },
-		"cameraNear": { value: null },
-		"cameraFar": { value: null },
-		"resolution": { value: new THREE.Vector2() },
-		"cameraProjectionMatrix": { value: new THREE.Matrix4() },
-		"cameraInverseProjectionMatrix": { value: new THREE.Matrix4() },
-		"kernelRadius": { value: 8 },
-		"minDistance": { value: 0.005 },
-		"maxDistance": { value: 0.05 },
+		defines: {
+			"PERSPECTIVE_CAMERA": 1,
+			"KERNEL_SIZE": 32
+		},
 
-	},
+		uniforms: {
 
-	vertexShader: [
+			"tDiffuse": { value: null },
+			"tNormal": { value: null },
+			"tDepth": { value: null },
+			"tNoise": { value: null },
+			"kernel": { value: null },
+			"cameraNear": { value: null },
+			"cameraFar": { value: null },
+			"resolution": { value: new THREE.Vector2() },
+			"cameraProjectionMatrix": { value: new THREE.Matrix4() },
+			"cameraInverseProjectionMatrix": { value: new THREE.Matrix4() },
+			"kernelRadius": { value: 8 },
+			"minDistance": { value: 0.005 },
+			"maxDistance": { value: 0.05 },
 
-		"varying vec2 vUv;",
+		},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
+			"varying vec2 vUv;",
 
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"void main() {",
 
-		"}"
+			"	vUv = uv;",
 
-	].join( "\n" ),
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"uniform sampler2D tDiffuse;",
-		"uniform sampler2D tNormal;",
-		"uniform sampler2D tDepth;",
-		"uniform sampler2D tNoise;",
+		].join( "\n" ),
 
-		"uniform vec3 kernel[ KERNEL_SIZE ];",
+		fragmentShader: [
 
-		"uniform vec2 resolution;",
+			"uniform sampler2D tDiffuse;",
+			"uniform sampler2D tNormal;",
+			"uniform sampler2D tDepth;",
+			"uniform sampler2D tNoise;",
 
-		"uniform float cameraNear;",
-		"uniform float cameraFar;",
-		"uniform mat4 cameraProjectionMatrix;",
-		"uniform mat4 cameraInverseProjectionMatrix;",
+			"uniform vec3 kernel[ KERNEL_SIZE ];",
 
-		"uniform float kernelRadius;",
-		"uniform float minDistance;", // avoid artifacts caused by neighbour fragments with minimal depth difference
-		"uniform float maxDistance;", // avoid the influence of fragments which are too far away
+			"uniform vec2 resolution;",
 
-		"varying vec2 vUv;",
+			"uniform float cameraNear;",
+			"uniform float cameraFar;",
+			"uniform mat4 cameraProjectionMatrix;",
+			"uniform mat4 cameraInverseProjectionMatrix;",
 
-		"#include <packing>",
+			"uniform float kernelRadius;",
+			"uniform float minDistance;", // avoid artifacts caused by neighbour fragments with minimal depth difference
+			"uniform float maxDistance;", // avoid the influence of fragments which are too far away
 
-		"float getDepth( const in vec2 screenPosition ) {",
+			"varying vec2 vUv;",
 
-		"	return texture2D( tDepth, screenPosition ).x;",
+			"#include <packing>",
 
-		"}",
+			"float getDepth( const in vec2 screenPosition ) {",
 
-		"float getLinearDepth( const in vec2 screenPosition ) {",
+			"	return texture2D( tDepth, screenPosition ).x;",
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+			"}",
 
-		"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
-		"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
-		"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
+			"float getLinearDepth( const in vec2 screenPosition ) {",
 
-		"	#else",
+			"	#if PERSPECTIVE_CAMERA == 1",
 
-		"		return texture2D( depthSampler, coord ).x;",
+			"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
+			"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
+			"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
 
-		"	#endif",
+			"	#else",
 
-		"}",
+			"		return texture2D( depthSampler, coord ).x;",
 
-		"float getViewZ( const in float depth ) {",
+			"	#endif",
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+			"}",
 
-		"		return perspectiveDepthToViewZ( depth, cameraNear, cameraFar );",
+			"float getViewZ( const in float depth ) {",
 
-		"	#else",
+			"	#if PERSPECTIVE_CAMERA == 1",
 
-		"		return orthographicDepthToViewZ( depth, cameraNear, cameraFar );",
+			"		return perspectiveDepthToViewZ( depth, cameraNear, cameraFar );",
 
-		"	#endif",
+			"	#else",
 
-		"}",
+			"		return orthographicDepthToViewZ( depth, cameraNear, cameraFar );",
 
-		"vec3 getViewPosition( const in vec2 screenPosition, const in float depth, const in float viewZ ) {",
+			"	#endif",
 
-		"	float clipW = cameraProjectionMatrix[2][3] * viewZ + cameraProjectionMatrix[3][3];",
+			"}",
 
-		"	vec4 clipPosition = vec4( ( vec3( screenPosition, depth ) - 0.5 ) * 2.0, 1.0 );",
+			"vec3 getViewPosition( const in vec2 screenPosition, const in float depth, const in float viewZ ) {",
 
-		"	clipPosition *= clipW; // unprojection.",
+			"	float clipW = cameraProjectionMatrix[2][3] * viewZ + cameraProjectionMatrix[3][3];",
 
-		"	return ( cameraInverseProjectionMatrix * clipPosition ).xyz;",
+			"	vec4 clipPosition = vec4( ( vec3( screenPosition, depth ) - 0.5 ) * 2.0, 1.0 );",
 
-		"}",
+			"	clipPosition *= clipW; // unprojection.",
 
-		"vec3 getViewNormal( const in vec2 screenPosition ) {",
+			"	return ( cameraInverseProjectionMatrix * clipPosition ).xyz;",
 
-		"	return unpackRGBToNormal( texture2D( tNormal, screenPosition ).xyz );",
+			"}",
 
-		"}",
+			"vec3 getViewNormal( const in vec2 screenPosition ) {",
 
-		"void main() {",
+			"	return unpackRGBToNormal( texture2D( tNormal, screenPosition ).xyz );",
 
-		"	float depth = getDepth( vUv );",
-		"	float viewZ = getViewZ( depth );",
+			"}",
 
-		"	vec3 viewPosition = getViewPosition( vUv, depth, viewZ );",
-		"	vec3 viewNormal = getViewNormal( vUv );",
+			"void main() {",
 
-		" vec2 noiseScale = vec2( resolution.x / 4.0, resolution.y / 4.0 );",
-		"	vec3 random = texture2D( tNoise, vUv * noiseScale ).xyz;",
+			"	float depth = getDepth( vUv );",
+			"	float viewZ = getViewZ( depth );",
 
-		// compute matrix used to reorient a kernel vector
+			"	vec3 viewPosition = getViewPosition( vUv, depth, viewZ );",
+			"	vec3 viewNormal = getViewNormal( vUv );",
 
-		"	vec3 tangent = normalize( random - viewNormal * dot( random, viewNormal ) );",
-		"	vec3 bitangent = cross( viewNormal, tangent );",
-		"	mat3 kernelMatrix = mat3( tangent, bitangent, viewNormal );",
+			" vec2 noiseScale = vec2( resolution.x / 4.0, resolution.y / 4.0 );",
+			"	vec3 random = texture2D( tNoise, vUv * noiseScale ).xyz;",
 
-		" float occlusion = 0.0;",
+			// compute matrix used to reorient a kernel vector
 
-		" for ( int i = 0; i < KERNEL_SIZE; i ++ ) {",
+			"	vec3 tangent = normalize( random - viewNormal * dot( random, viewNormal ) );",
+			"	vec3 bitangent = cross( viewNormal, tangent );",
+			"	mat3 kernelMatrix = mat3( tangent, bitangent, viewNormal );",
 
-		"		vec3 sampleVector = kernelMatrix * kernel[ i ];", // reorient sample vector in view space
-		"		vec3 samplePoint = viewPosition + ( sampleVector * kernelRadius );", // calculate sample point
+			" float occlusion = 0.0;",
 
-		"		vec4 samplePointNDC = cameraProjectionMatrix * vec4( samplePoint, 1.0 );", // project point and calculate NDC
-		"		samplePointNDC /= samplePointNDC.w;",
+			" for ( int i = 0; i < KERNEL_SIZE; i ++ ) {",
 
-		"		vec2 samplePointUv = samplePointNDC.xy * 0.5 + 0.5;", // compute uv coordinates
+			"		vec3 sampleVector = kernelMatrix * kernel[ i ];", // reorient sample vector in view space
+			"		vec3 samplePoint = viewPosition + ( sampleVector * kernelRadius );", // calculate sample point
 
-		"		float realDepth = getLinearDepth( samplePointUv );", // get linear depth from depth texture
-		"		float sampleDepth = viewZToOrthographicDepth( samplePoint.z, cameraNear, cameraFar );", // compute linear depth of the sample view Z value
-		"		float delta = sampleDepth - realDepth;",
+			"		vec4 samplePointNDC = cameraProjectionMatrix * vec4( samplePoint, 1.0 );", // project point and calculate NDC
+			"		samplePointNDC /= samplePointNDC.w;",
 
-		"		if ( delta > minDistance && delta < maxDistance ) {", // if fragment is before sample point, increase occlusion
+			"		vec2 samplePointUv = samplePointNDC.xy * 0.5 + 0.5;", // compute uv coordinates
 
-		"			occlusion += 1.0;",
+			"		float realDepth = getLinearDepth( samplePointUv );", // get linear depth from depth texture
+			"		float sampleDepth = viewZToOrthographicDepth( samplePoint.z, cameraNear, cameraFar );", // compute linear depth of the sample view Z value
+			"		float delta = sampleDepth - realDepth;",
 
-		"		}",
+			"		if ( delta > minDistance && delta < maxDistance ) {", // if fragment is before sample point, increase occlusion
 
-		"	}",
+			"			occlusion += 1.0;",
 
-		"	occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );",
+			"		}",
 
-		"	gl_FragColor = vec4( vec3( 1.0 - occlusion ), 1.0 );",
+			"	}",
 
-		"}"
+			"	occlusion = clamp( occlusion / float( KERNEL_SIZE ), 0.0, 1.0 );",
 
-	].join( "\n" )
+			"	gl_FragColor = vec4( vec3( 1.0 - occlusion ), 1.0 );",
 
-};
+			"}"
 
-THREE.SSAODepthShader = {
+		].join( "\n" )
 
-	defines: {
-		"PERSPECTIVE_CAMERA": 1
-	},
+	};
 
-	uniforms: {
+	var SSAODepthShader = {
 
-		"tDepth": { value: null },
-		"cameraNear": { value: null },
-		"cameraFar": { value: null },
+		defines: {
+			"PERSPECTIVE_CAMERA": 1
+		},
 
-	},
+		uniforms: {
 
-	vertexShader: [
+			"tDepth": { value: null },
+			"cameraNear": { value: null },
+			"cameraFar": { value: null },
 
-		"varying vec2 vUv;",
+		},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"varying vec2 vUv;",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" ),
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"uniform sampler2D tDepth;",
+		].join( "\n" ),
 
-		"uniform float cameraNear;",
-		"uniform float cameraFar;",
+		fragmentShader: [
 
-		"varying vec2 vUv;",
+			"uniform sampler2D tDepth;",
 
-		"#include <packing>",
+			"uniform float cameraNear;",
+			"uniform float cameraFar;",
 
-		"float getLinearDepth( const in vec2 screenPosition ) {",
+			"varying vec2 vUv;",
 
-		"	#if PERSPECTIVE_CAMERA == 1",
+			"#include <packing>",
 
-		"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
-		"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
-		"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
+			"float getLinearDepth( const in vec2 screenPosition ) {",
 
-		"	#else",
+			"	#if PERSPECTIVE_CAMERA == 1",
 
-		"		return texture2D( depthSampler, coord ).x;",
+			"		float fragCoordZ = texture2D( tDepth, screenPosition ).x;",
+			"		float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );",
+			"		return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );",
 
-		"	#endif",
+			"	#else",
 
-		"}",
+			"		return texture2D( depthSampler, coord ).x;",
 
-		"void main() {",
+			"	#endif",
 
-		"	float depth = getLinearDepth( vUv );",
-		"	gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );",
+			"}",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" )
+			"	float depth = getLinearDepth( vUv );",
+			"	gl_FragColor = vec4( vec3( 1.0 - depth ), 1.0 );",
 
-};
+			"}"
 
-THREE.SSAOBlurShader = {
+		].join( "\n" )
 
-	uniforms: {
+	};
 
-		"tDiffuse": { value: null },
-		"resolution": { value: new THREE.Vector2() }
+	var SSAOBlurShader = {
 
-	},
+		uniforms: {
 
-	vertexShader: [
+			"tDiffuse": { value: null },
+			"resolution": { value: new THREE.Vector2() }
 
-		"varying vec2 vUv;",
+		},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"varying vec2 vUv;",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" ),
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"uniform sampler2D tDiffuse;",
+		].join( "\n" ),
 
-		"uniform vec2 resolution;",
+		fragmentShader: [
 
-		"varying vec2 vUv;",
+			"uniform sampler2D tDiffuse;",
 
-		"void main() {",
+			"uniform vec2 resolution;",
 
-		"	vec2 texelSize = ( 1.0 / resolution );",
-		"	float result = 0.0;",
+			"varying vec2 vUv;",
 
-		"	for ( int i = - 2; i <= 2; i ++ ) {",
+			"void main() {",
 
-		"		for ( int j = - 2; j <= 2; j ++ ) {",
+			"	vec2 texelSize = ( 1.0 / resolution );",
+			"	float result = 0.0;",
 
-		"			vec2 offset = ( vec2( float( i ), float( j ) ) ) * texelSize;",
-		"			result += texture2D( tDiffuse, vUv + offset ).r;",
+			"	for ( int i = - 2; i <= 2; i ++ ) {",
 
-		"		}",
+			"		for ( int j = - 2; j <= 2; j ++ ) {",
 
-		"	}",
+			"			vec2 offset = ( vec2( float( i ), float( j ) ) ) * texelSize;",
+			"			result += texture2D( tDiffuse, vUv + offset ).r;",
 
-		"	gl_FragColor = vec4( vec3( result / ( 5.0 * 5.0 ) ), 1.0 );",
+			"		}",
 
-		"}"
+			"	}",
 
-	].join( "\n" )
+			"	gl_FragColor = vec4( vec3( result / ( 5.0 * 5.0 ) ), 1.0 );",
 
-};
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.SSAOBlurShader = SSAOBlurShader;
+	exports.SSAODepthShader = SSAODepthShader;
+	exports.SSAOShader = SSAOShader;
+
+}));

@@ -1,58 +1,74 @@
 /**
- * @author alteredq / http://alteredqualia.com/
- *
- * Depth-of-field shader using mipmaps
- * - from Matt Handley @applmak
- * - requires power-of-2 sized render target with enabled mipmaps
+ * Generated from 'examples/jsm/shaders/DOFMipMapShader.js'
  */
 
-THREE.DOFMipMapShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 * Depth-of-field shader using mipmaps
+	 * - from Matt Handley @applmak
+	 * - requires power-of-2 sized render target with enabled mipmaps
+	 */
 
-		"tColor": { value: null },
-		"tDepth": { value: null },
-		"focus": { value: 1.0 },
-		"maxblur": { value: 1.0 }
 
-	},
 
-	vertexShader: [
+	var DOFMipMapShader = {
 
-		"varying vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"tColor": { value: null },
+			"tDepth": { value: null },
+			"focus": { value: 1.0 },
+			"maxblur": { value: 1.0 }
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		},
 
-		"}"
+		vertexShader: [
 
-	].join( "\n" ),
+			"varying vec2 vUv;",
 
-	fragmentShader: [
+			"void main() {",
 
-		"uniform float focus;",
-		"uniform float maxblur;",
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"uniform sampler2D tColor;",
-		"uniform sampler2D tDepth;",
+			"}"
 
-		"varying vec2 vUv;",
+		].join( "\n" ),
 
-		"void main() {",
+		fragmentShader: [
 
-		"	vec4 depth = texture2D( tDepth, vUv );",
+			"uniform float focus;",
+			"uniform float maxblur;",
 
-		"	float factor = depth.x - focus;",
+			"uniform sampler2D tColor;",
+			"uniform sampler2D tDepth;",
 
-		"	vec4 col = texture2D( tColor, vUv, 2.0 * maxblur * abs( focus - depth.x ) );",
+			"varying vec2 vUv;",
 
-		"	gl_FragColor = col;",
-		"	gl_FragColor.a = 1.0;",
+			"void main() {",
 
-		"}"
+			"	vec4 depth = texture2D( tDepth, vUv );",
 
-	].join( "\n" )
+			"	float factor = depth.x - focus;",
 
-};
+			"	vec4 col = texture2D( tColor, vUv, 2.0 * maxblur * abs( focus - depth.x ) );",
+
+			"	gl_FragColor = col;",
+			"	gl_FragColor.a = 1.0;",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.DOFMipMapShader = DOFMipMapShader;
+
+}));

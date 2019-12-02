@@ -1,425 +1,439 @@
 /**
- * A bunch of parametric curves
- * @author zz85
- *
- * Formulas collected from various sources
- * http://mathworld.wolfram.com/HeartCurve.html
- * http://mathdl.maa.org/images/upload_library/23/stemkoski/knots/page6.html
- * http://en.wikipedia.org/wiki/Viviani%27s_curve
- * http://mathdl.maa.org/images/upload_library/23/stemkoski/knots/page4.html
- * http://www.mi.sanu.ac.rs/vismath/taylorapril2011/Taylor.pdf
- * http://prideout.net/blog/?p=44
+ * Generated from 'examples/jsm/curves/CurveExtras.js'
  */
 
-THREE.Curves = ( function () {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	// GrannyKnot
+	/**
+	 * A bunch of parametric curves
+	 * @author zz85
+	 *
+	 * Formulas collected from various sources
+	 * http://mathworld.wolfram.com/HeartCurve.html
+	 * http://mathdl.maa.org/images/upload_library/23/stemkoski/knots/page6.html
+	 * http://en.wikipedia.org/wiki/Viviani%27s_curve
+	 * http://mathdl.maa.org/images/upload_library/23/stemkoski/knots/page4.html
+	 * http://www.mi.sanu.ac.rs/vismath/taylorapril2011/Taylor.pdf
+	 * http://prideout.net/blog/?p=44
+	 */
 
-	function GrannyKnot() {
+	var Curves = ( function () {
 
-		THREE.Curve.call( this );
+		// GrannyKnot
 
-	}
+		function GrannyKnot() {
 
-	GrannyKnot.prototype = Object.create( THREE.Curve.prototype );
-	GrannyKnot.prototype.constructor = GrannyKnot;
+			THREE.Curve.call( this );
 
-	GrannyKnot.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		GrannyKnot.prototype = Object.create( THREE.Curve.prototype );
+		GrannyKnot.prototype.constructor = GrannyKnot;
 
-		t = 2 * Math.PI * t;
+		GrannyKnot.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = - 0.22 * Math.cos( t ) - 1.28 * Math.sin( t ) - 0.44 * Math.cos( 3 * t ) - 0.78 * Math.sin( 3 * t );
-		var y = - 0.1 * Math.cos( 2 * t ) - 0.27 * Math.sin( 2 * t ) + 0.38 * Math.cos( 4 * t ) + 0.46 * Math.sin( 4 * t );
-		var z = 0.7 * Math.cos( 3 * t ) - 0.4 * Math.sin( 3 * t );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( 20 );
+			t = 2 * Math.PI * t;
 
-	};
+			var x = - 0.22 * Math.cos( t ) - 1.28 * Math.sin( t ) - 0.44 * Math.cos( 3 * t ) - 0.78 * Math.sin( 3 * t );
+			var y = - 0.1 * Math.cos( 2 * t ) - 0.27 * Math.sin( 2 * t ) + 0.38 * Math.cos( 4 * t ) + 0.46 * Math.sin( 4 * t );
+			var z = 0.7 * Math.cos( 3 * t ) - 0.4 * Math.sin( 3 * t );
 
-	// HeartCurve
+			return point.set( x, y, z ).multiplyScalar( 20 );
 
-	function HeartCurve( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// HeartCurve
 
-		this.scale = ( scale === undefined ) ? 5 : scale;
+		function HeartCurve( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	HeartCurve.prototype = Object.create( THREE.Curve.prototype );
-	HeartCurve.prototype.constructor = HeartCurve;
+			this.scale = ( scale === undefined ) ? 5 : scale;
 
-	HeartCurve.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		HeartCurve.prototype = Object.create( THREE.Curve.prototype );
+		HeartCurve.prototype.constructor = HeartCurve;
 
-		t *= 2 * Math.PI;
+		HeartCurve.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = 16 * Math.pow( Math.sin( t ), 3 );
-		var y = 13 * Math.cos( t ) - 5 * Math.cos( 2 * t ) - 2 * Math.cos( 3 * t ) - Math.cos( 4 * t );
-		var z = 0;
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t *= 2 * Math.PI;
 
-	};
+			var x = 16 * Math.pow( Math.sin( t ), 3 );
+			var y = 13 * Math.cos( t ) - 5 * Math.cos( 2 * t ) - 2 * Math.cos( 3 * t ) - Math.cos( 4 * t );
+			var z = 0;
 
-	// Viviani's Curve
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function VivianiCurve( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// Viviani's Curve
 
-		this.scale = ( scale === undefined ) ? 70 : scale;
+		function VivianiCurve( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	VivianiCurve.prototype = Object.create( THREE.Curve.prototype );
-	VivianiCurve.prototype.constructor = VivianiCurve;
+			this.scale = ( scale === undefined ) ? 70 : scale;
 
-	VivianiCurve.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		VivianiCurve.prototype = Object.create( THREE.Curve.prototype );
+		VivianiCurve.prototype.constructor = VivianiCurve;
 
-		t = t * 4 * Math.PI; // normalized to 0..1
-		var a = this.scale / 2;
+		VivianiCurve.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = a * ( 1 + Math.cos( t ) );
-		var y = a * Math.sin( t );
-		var z = 2 * a * Math.sin( t / 2 );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z );
+			t = t * 4 * Math.PI; // normalized to 0..1
+			var a = this.scale / 2;
 
-	};
+			var x = a * ( 1 + Math.cos( t ) );
+			var y = a * Math.sin( t );
+			var z = 2 * a * Math.sin( t / 2 );
 
-	// KnotCurve
+			return point.set( x, y, z );
 
-	function KnotCurve() {
+		};
 
-		THREE.Curve.call( this );
+		// KnotCurve
 
-	}
+		function KnotCurve() {
 
-	KnotCurve.prototype = Object.create( THREE.Curve.prototype );
-	KnotCurve.prototype.constructor = KnotCurve;
+			THREE.Curve.call( this );
 
-	KnotCurve.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		KnotCurve.prototype = Object.create( THREE.Curve.prototype );
+		KnotCurve.prototype.constructor = KnotCurve;
 
-		t *= 2 * Math.PI;
+		KnotCurve.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var R = 10;
-		var s = 50;
+			var point = optionalTarget || new THREE.Vector3();
 
-		var x = s * Math.sin( t );
-		var y = Math.cos( t ) * ( R + s * Math.cos( t ) );
-		var z = Math.sin( t ) * ( R + s * Math.cos( t ) );
+			t *= 2 * Math.PI;
 
-		return point.set( x, y, z );
+			var R = 10;
+			var s = 50;
 
-	};
+			var x = s * Math.sin( t );
+			var y = Math.cos( t ) * ( R + s * Math.cos( t ) );
+			var z = Math.sin( t ) * ( R + s * Math.cos( t ) );
 
-	// HelixCurve
+			return point.set( x, y, z );
 
-	function HelixCurve() {
+		};
 
-		THREE.Curve.call( this );
+		// HelixCurve
 
-	}
+		function HelixCurve() {
 
-	HelixCurve.prototype = Object.create( THREE.Curve.prototype );
-	HelixCurve.prototype.constructor = HelixCurve;
+			THREE.Curve.call( this );
 
-	HelixCurve.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		HelixCurve.prototype = Object.create( THREE.Curve.prototype );
+		HelixCurve.prototype.constructor = HelixCurve;
 
-		var a = 30; // radius
-		var b = 150; // height
+		HelixCurve.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var t2 = 2 * Math.PI * t * b / 30;
+			var point = optionalTarget || new THREE.Vector3();
 
-		var x = Math.cos( t2 ) * a;
-		var y = Math.sin( t2 ) * a;
-		var z = b * t;
+			var a = 30; // radius
+			var b = 150; // height
 
-		return point.set( x, y, z );
+			var t2 = 2 * Math.PI * t * b / 30;
 
-	};
+			var x = Math.cos( t2 ) * a;
+			var y = Math.sin( t2 ) * a;
+			var z = b * t;
 
-	// TrefoilKnot
+			return point.set( x, y, z );
 
-	function TrefoilKnot( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// TrefoilKnot
 
-		this.scale = ( scale === undefined ) ? 10 : scale;
+		function TrefoilKnot( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	TrefoilKnot.prototype = Object.create( THREE.Curve.prototype );
-	TrefoilKnot.prototype.constructor = TrefoilKnot;
+			this.scale = ( scale === undefined ) ? 10 : scale;
 
-	TrefoilKnot.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		TrefoilKnot.prototype = Object.create( THREE.Curve.prototype );
+		TrefoilKnot.prototype.constructor = TrefoilKnot;
 
-		t *= Math.PI * 2;
+		TrefoilKnot.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = ( 2 + Math.cos( 3 * t ) ) * Math.cos( 2 * t );
-		var y = ( 2 + Math.cos( 3 * t ) ) * Math.sin( 2 * t );
-		var z = Math.sin( 3 * t );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t *= Math.PI * 2;
 
-	};
+			var x = ( 2 + Math.cos( 3 * t ) ) * Math.cos( 2 * t );
+			var y = ( 2 + Math.cos( 3 * t ) ) * Math.sin( 2 * t );
+			var z = Math.sin( 3 * t );
 
-	// TorusKnot
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function TorusKnot( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// TorusKnot
 
-		this.scale = ( scale === undefined ) ? 10 : scale;
+		function TorusKnot( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	TorusKnot.prototype = Object.create( THREE.Curve.prototype );
-	TorusKnot.prototype.constructor = TorusKnot;
+			this.scale = ( scale === undefined ) ? 10 : scale;
 
-	TorusKnot.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		TorusKnot.prototype = Object.create( THREE.Curve.prototype );
+		TorusKnot.prototype.constructor = TorusKnot;
 
-		var p = 3;
-		var q = 4;
+		TorusKnot.prototype.getPoint = function ( t, optionalTarget ) {
 
-		t *= Math.PI * 2;
+			var point = optionalTarget || new THREE.Vector3();
 
-		var x = ( 2 + Math.cos( q * t ) ) * Math.cos( p * t );
-		var y = ( 2 + Math.cos( q * t ) ) * Math.sin( p * t );
-		var z = Math.sin( q * t );
+			var p = 3;
+			var q = 4;
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t *= Math.PI * 2;
 
-	};
+			var x = ( 2 + Math.cos( q * t ) ) * Math.cos( p * t );
+			var y = ( 2 + Math.cos( q * t ) ) * Math.sin( p * t );
+			var z = Math.sin( q * t );
 
-	// CinquefoilKnot
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function CinquefoilKnot( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// CinquefoilKnot
 
-		this.scale = ( scale === undefined ) ? 10 : scale;
+		function CinquefoilKnot( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	CinquefoilKnot.prototype = Object.create( THREE.Curve.prototype );
-	CinquefoilKnot.prototype.constructor = CinquefoilKnot;
+			this.scale = ( scale === undefined ) ? 10 : scale;
 
-	CinquefoilKnot.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		CinquefoilKnot.prototype = Object.create( THREE.Curve.prototype );
+		CinquefoilKnot.prototype.constructor = CinquefoilKnot;
 
-		var p = 2;
-		var q = 5;
+		CinquefoilKnot.prototype.getPoint = function ( t, optionalTarget ) {
 
-		t *= Math.PI * 2;
+			var point = optionalTarget || new THREE.Vector3();
 
-		var x = ( 2 + Math.cos( q * t ) ) * Math.cos( p * t );
-		var y = ( 2 + Math.cos( q * t ) ) * Math.sin( p * t );
-		var z = Math.sin( q * t );
+			var p = 2;
+			var q = 5;
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t *= Math.PI * 2;
 
-	};
+			var x = ( 2 + Math.cos( q * t ) ) * Math.cos( p * t );
+			var y = ( 2 + Math.cos( q * t ) ) * Math.sin( p * t );
+			var z = Math.sin( q * t );
 
-	// TrefoilPolynomialKnot
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function TrefoilPolynomialKnot( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// TrefoilPolynomialKnot
 
-		this.scale = ( scale === undefined ) ? 10 : scale;
+		function TrefoilPolynomialKnot( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	TrefoilPolynomialKnot.prototype = Object.create( THREE.Curve.prototype );
-	TrefoilPolynomialKnot.prototype.constructor = TrefoilPolynomialKnot;
+			this.scale = ( scale === undefined ) ? 10 : scale;
 
-	TrefoilPolynomialKnot.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		TrefoilPolynomialKnot.prototype = Object.create( THREE.Curve.prototype );
+		TrefoilPolynomialKnot.prototype.constructor = TrefoilPolynomialKnot;
 
-		t = t * 4 - 2;
+		TrefoilPolynomialKnot.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = Math.pow( t, 3 ) - 3 * t;
-		var y = Math.pow( t, 4 ) - 4 * t * t;
-		var z = 1 / 5 * Math.pow( t, 5 ) - 2 * t;
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t = t * 4 - 2;
 
-	};
+			var x = Math.pow( t, 3 ) - 3 * t;
+			var y = Math.pow( t, 4 ) - 4 * t * t;
+			var z = 1 / 5 * Math.pow( t, 5 ) - 2 * t;
 
-	var scaleTo = function ( x, y, t ) {
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-		var r = y - x;
-		return t * r + x;
+		};
 
-	};
+		var scaleTo = function ( x, y, t ) {
 
-	// FigureEightPolynomialKnot
+			var r = y - x;
+			return t * r + x;
 
-	function FigureEightPolynomialKnot( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// FigureEightPolynomialKnot
 
-		this.scale = ( scale === undefined ) ? 1 : scale;
+		function FigureEightPolynomialKnot( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	FigureEightPolynomialKnot.prototype = Object.create( THREE.Curve.prototype );
-	FigureEightPolynomialKnot.prototype.constructor = FigureEightPolynomialKnot;
+			this.scale = ( scale === undefined ) ? 1 : scale;
 
-	FigureEightPolynomialKnot.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		FigureEightPolynomialKnot.prototype = Object.create( THREE.Curve.prototype );
+		FigureEightPolynomialKnot.prototype.constructor = FigureEightPolynomialKnot;
 
-		t = scaleTo( - 4, 4, t );
+		FigureEightPolynomialKnot.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = 2 / 5 * t * ( t * t - 7 ) * ( t * t - 10 );
-		var y = Math.pow( t, 4 ) - 13 * t * t;
-		var z = 1 / 10 * t * ( t * t - 4 ) * ( t * t - 9 ) * ( t * t - 12 );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t = scaleTo( - 4, 4, t );
 
-	};
+			var x = 2 / 5 * t * ( t * t - 7 ) * ( t * t - 10 );
+			var y = Math.pow( t, 4 ) - 13 * t * t;
+			var z = 1 / 10 * t * ( t * t - 4 ) * ( t * t - 9 ) * ( t * t - 12 );
 
-	// DecoratedTorusKnot4a
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function DecoratedTorusKnot4a( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// DecoratedTorusKnot4a
 
-		this.scale = ( scale === undefined ) ? 40 : scale;
+		function DecoratedTorusKnot4a( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	DecoratedTorusKnot4a.prototype = Object.create( THREE.Curve.prototype );
-	DecoratedTorusKnot4a.prototype.constructor = DecoratedTorusKnot4a;
+			this.scale = ( scale === undefined ) ? 40 : scale;
 
-	DecoratedTorusKnot4a.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		DecoratedTorusKnot4a.prototype = Object.create( THREE.Curve.prototype );
+		DecoratedTorusKnot4a.prototype.constructor = DecoratedTorusKnot4a;
 
-		t *= Math.PI * 2;
+		DecoratedTorusKnot4a.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = Math.cos( 2 * t ) * ( 1 + 0.6 * ( Math.cos( 5 * t ) + 0.75 * Math.cos( 10 * t ) ) );
-		var y = Math.sin( 2 * t ) * ( 1 + 0.6 * ( Math.cos( 5 * t ) + 0.75 * Math.cos( 10 * t ) ) );
-		var z = 0.35 * Math.sin( 5 * t );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			t *= Math.PI * 2;
 
-	};
+			var x = Math.cos( 2 * t ) * ( 1 + 0.6 * ( Math.cos( 5 * t ) + 0.75 * Math.cos( 10 * t ) ) );
+			var y = Math.sin( 2 * t ) * ( 1 + 0.6 * ( Math.cos( 5 * t ) + 0.75 * Math.cos( 10 * t ) ) );
+			var z = 0.35 * Math.sin( 5 * t );
 
-	// DecoratedTorusKnot4b
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function DecoratedTorusKnot4b( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// DecoratedTorusKnot4b
 
-		this.scale = ( scale === undefined ) ? 40 : scale;
+		function DecoratedTorusKnot4b( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	DecoratedTorusKnot4b.prototype = Object.create( THREE.Curve.prototype );
-	DecoratedTorusKnot4b.prototype.constructor = DecoratedTorusKnot4b;
+			this.scale = ( scale === undefined ) ? 40 : scale;
 
-	DecoratedTorusKnot4b.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		DecoratedTorusKnot4b.prototype = Object.create( THREE.Curve.prototype );
+		DecoratedTorusKnot4b.prototype.constructor = DecoratedTorusKnot4b;
 
-		var fi = t * Math.PI * 2;
+		DecoratedTorusKnot4b.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = Math.cos( 2 * fi ) * ( 1 + 0.45 * Math.cos( 3 * fi ) + 0.4 * Math.cos( 9 * fi ) );
-		var y = Math.sin( 2 * fi ) * ( 1 + 0.45 * Math.cos( 3 * fi ) + 0.4 * Math.cos( 9 * fi ) );
-		var z = 0.2 * Math.sin( 9 * fi );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			var fi = t * Math.PI * 2;
 
-	};
+			var x = Math.cos( 2 * fi ) * ( 1 + 0.45 * Math.cos( 3 * fi ) + 0.4 * Math.cos( 9 * fi ) );
+			var y = Math.sin( 2 * fi ) * ( 1 + 0.45 * Math.cos( 3 * fi ) + 0.4 * Math.cos( 9 * fi ) );
+			var z = 0.2 * Math.sin( 9 * fi );
 
-	// DecoratedTorusKnot5a
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function DecoratedTorusKnot5a( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// DecoratedTorusKnot5a
 
-		this.scale = ( scale === undefined ) ? 40 : scale;
+		function DecoratedTorusKnot5a( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	DecoratedTorusKnot5a.prototype = Object.create( THREE.Curve.prototype );
-	DecoratedTorusKnot5a.prototype.constructor = DecoratedTorusKnot5a;
+			this.scale = ( scale === undefined ) ? 40 : scale;
 
-	DecoratedTorusKnot5a.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		DecoratedTorusKnot5a.prototype = Object.create( THREE.Curve.prototype );
+		DecoratedTorusKnot5a.prototype.constructor = DecoratedTorusKnot5a;
 
-		var fi = t * Math.PI * 2;
+		DecoratedTorusKnot5a.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = Math.cos( 3 * fi ) * ( 1 + 0.3 * Math.cos( 5 * fi ) + 0.5 * Math.cos( 10 * fi ) );
-		var y = Math.sin( 3 * fi ) * ( 1 + 0.3 * Math.cos( 5 * fi ) + 0.5 * Math.cos( 10 * fi ) );
-		var z = 0.2 * Math.sin( 20 * fi );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			var fi = t * Math.PI * 2;
 
-	};
+			var x = Math.cos( 3 * fi ) * ( 1 + 0.3 * Math.cos( 5 * fi ) + 0.5 * Math.cos( 10 * fi ) );
+			var y = Math.sin( 3 * fi ) * ( 1 + 0.3 * Math.cos( 5 * fi ) + 0.5 * Math.cos( 10 * fi ) );
+			var z = 0.2 * Math.sin( 20 * fi );
 
-	// DecoratedTorusKnot5c
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-	function DecoratedTorusKnot5c( scale ) {
+		};
 
-		THREE.Curve.call( this );
+		// DecoratedTorusKnot5c
 
-		this.scale = ( scale === undefined ) ? 40 : scale;
+		function DecoratedTorusKnot5c( scale ) {
 
-	}
+			THREE.Curve.call( this );
 
-	DecoratedTorusKnot5c.prototype = Object.create( THREE.Curve.prototype );
-	DecoratedTorusKnot5c.prototype.constructor = DecoratedTorusKnot5c;
+			this.scale = ( scale === undefined ) ? 40 : scale;
 
-	DecoratedTorusKnot5c.prototype.getPoint = function ( t, optionalTarget ) {
+		}
 
-		var point = optionalTarget || new THREE.Vector3();
+		DecoratedTorusKnot5c.prototype = Object.create( THREE.Curve.prototype );
+		DecoratedTorusKnot5c.prototype.constructor = DecoratedTorusKnot5c;
 
-		var fi = t * Math.PI * 2;
+		DecoratedTorusKnot5c.prototype.getPoint = function ( t, optionalTarget ) {
 
-		var x = Math.cos( 4 * fi ) * ( 1 + 0.5 * ( Math.cos( 5 * fi ) + 0.4 * Math.cos( 20 * fi ) ) );
-		var y = Math.sin( 4 * fi ) * ( 1 + 0.5 * ( Math.cos( 5 * fi ) + 0.4 * Math.cos( 20 * fi ) ) );
-		var z = 0.35 * Math.sin( 15 * fi );
+			var point = optionalTarget || new THREE.Vector3();
 
-		return point.set( x, y, z ).multiplyScalar( this.scale );
+			var fi = t * Math.PI * 2;
 
-	};
+			var x = Math.cos( 4 * fi ) * ( 1 + 0.5 * ( Math.cos( 5 * fi ) + 0.4 * Math.cos( 20 * fi ) ) );
+			var y = Math.sin( 4 * fi ) * ( 1 + 0.5 * ( Math.cos( 5 * fi ) + 0.4 * Math.cos( 20 * fi ) ) );
+			var z = 0.35 * Math.sin( 15 * fi );
 
-	return {
-		GrannyKnot: GrannyKnot,
-		HeartCurve: HeartCurve,
-		VivianiCurve: VivianiCurve,
-		KnotCurve: KnotCurve,
-		HelixCurve: HelixCurve,
-		TrefoilKnot: TrefoilKnot,
-		TorusKnot: TorusKnot,
-		CinquefoilKnot: CinquefoilKnot,
-		TrefoilPolynomialKnot: TrefoilPolynomialKnot,
-		FigureEightPolynomialKnot: FigureEightPolynomialKnot,
-		DecoratedTorusKnot4a: DecoratedTorusKnot4a,
-		DecoratedTorusKnot4b: DecoratedTorusKnot4b,
-		DecoratedTorusKnot5a: DecoratedTorusKnot5a,
-		DecoratedTorusKnot5c: DecoratedTorusKnot5c
-	};
+			return point.set( x, y, z ).multiplyScalar( this.scale );
 
-} )();
+		};
+
+		return {
+			GrannyKnot: GrannyKnot,
+			HeartCurve: HeartCurve,
+			VivianiCurve: VivianiCurve,
+			KnotCurve: KnotCurve,
+			HelixCurve: HelixCurve,
+			TrefoilKnot: TrefoilKnot,
+			TorusKnot: TorusKnot,
+			CinquefoilKnot: CinquefoilKnot,
+			TrefoilPolynomialKnot: TrefoilPolynomialKnot,
+			FigureEightPolynomialKnot: FigureEightPolynomialKnot,
+			DecoratedTorusKnot4a: DecoratedTorusKnot4a,
+			DecoratedTorusKnot4b: DecoratedTorusKnot4b,
+			DecoratedTorusKnot5a: DecoratedTorusKnot5a,
+			DecoratedTorusKnot5c: DecoratedTorusKnot5c
+		};
+
+	} )();
+
+	exports.Curves = Curves;
+
+}));

@@ -1,37 +1,51 @@
 /**
- * @author alteredq / http://alteredqualia.com/
+ * Generated from 'examples/jsm/utils/SceneUtils.js'
  */
 
-THREE.SceneUtils = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	createMultiMaterialObject: function ( geometry, materials ) {
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 */
 
-		var group = new THREE.Group();
+	var SceneUtils = {
 
-		for ( var i = 0, l = materials.length; i < l; i ++ ) {
+		createMultiMaterialObject: function ( geometry, materials ) {
 
-			group.add( new THREE.Mesh( geometry, materials[ i ] ) );
+			var group = new THREE.Group();
+
+			for ( var i = 0, l = materials.length; i < l; i ++ ) {
+
+				group.add( new THREE.Mesh( geometry, materials[ i ] ) );
+
+			}
+
+			return group;
+
+		},
+
+		detach: function ( child, parent, scene ) {
+
+			console.warn( 'THREE.SceneUtils: detach() has been deprecated. Use scene.attach( child ) instead.' );
+
+			scene.attach( child );
+
+		},
+
+		attach: function ( child, scene, parent ) {
+
+			console.warn( 'THREE.SceneUtils: attach() has been deprecated. Use parent.attach( child ) instead.' );
+
+			parent.attach( child );
 
 		}
 
-		return group;
+	};
 
-	},
+	exports.SceneUtils = SceneUtils;
 
-	detach: function ( child, parent, scene ) {
-
-		console.warn( 'THREE.SceneUtils: detach() has been deprecated. Use scene.attach( child ) instead.' );
-
-		scene.attach( child );
-
-	},
-
-	attach: function ( child, scene, parent ) {
-
-		console.warn( 'THREE.SceneUtils: attach() has been deprecated. Use parent.attach( child ) instead.' );
-
-		parent.attach( child );
-
-	}
-
-};
+}));

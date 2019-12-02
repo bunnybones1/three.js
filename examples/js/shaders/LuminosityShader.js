@@ -1,50 +1,66 @@
 /**
- * @author alteredq / http://alteredqualia.com/
- *
- * Luminosity
- * http://en.wikipedia.org/wiki/Luminosity
+ * Generated from 'examples/jsm/shaders/LuminosityShader.js'
  */
 
-THREE.LuminosityShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 * Luminosity
+	 * http://en.wikipedia.org/wiki/Luminosity
+	 */
 
-		"tDiffuse": { value: null }
 
-	},
 
-	vertexShader: [
+	var LuminosityShader = {
 
-		"varying vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"tDiffuse": { value: null }
 
-		"	vUv = uv;",
+		},
 
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		vertexShader: [
 
-		"}"
+			"varying vec2 vUv;",
 
-	].join( "\n" ),
+			"void main() {",
 
-	fragmentShader: [
+			"	vUv = uv;",
 
-		"#include <common>",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"uniform sampler2D tDiffuse;",
+			"}"
 
-		"varying vec2 vUv;",
+		].join( "\n" ),
 
-		"void main() {",
+		fragmentShader: [
 
-		"	vec4 texel = texture2D( tDiffuse, vUv );",
+			"#include <common>",
 
-		"	float l = linearToRelativeLuminance( texel.rgb );",
+			"uniform sampler2D tDiffuse;",
 
-		"	gl_FragColor = vec4( l, l, l, texel.w );",
+			"varying vec2 vUv;",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" )
+			"	vec4 texel = texture2D( tDiffuse, vUv );",
 
-};
+			"	float l = linearToRelativeLuminance( texel.rgb );",
+
+			"	gl_FragColor = vec4( l, l, l, texel.w );",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.LuminosityShader = LuminosityShader;
+
+}));

@@ -1,13 +1,27 @@
 /**
- * RTT version
+ * Generated from 'examples/jsm/objects/ReflectorRTT.js'
  */
 
-THREE.ReflectorRTT = function ( geometry, options ) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('/Users/Tomasz/Documents/repos/three.js/examples/jsm/objects/Reflector.js')) :
+	typeof define === 'function' && define.amd ? define(['exports', '/Users/Tomasz/Documents/repos/three.js/examples/jsm/objects/Reflector.js'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, Reflector_js) { 'use strict';
 
-	THREE.Reflector.call( this, geometry, options );
+	/**
+	 * RTT version
+	 */
 
-	this.geometry.setDrawRange( 0, 0 ); // avoid rendering geometry
+	var ReflectorRTT = function ( geometry, options ) {
 
-};
+		Reflector_js.Reflector.call( this, geometry, options );
 
-THREE.ReflectorRTT.prototype = Object.create( THREE.Reflector.prototype );
+		this.geometry.setDrawRange( 0, 0 ); // avoid rendering geometry
+
+	};
+
+	ReflectorRTT.prototype = Object.create( Reflector_js.Reflector.prototype );
+
+	exports.ReflectorRTT = ReflectorRTT;
+
+}));

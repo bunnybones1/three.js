@@ -1,93 +1,107 @@
 /**
- * @author HypnosNova / https://www.threejs.org.cn/gallery/
+ * Generated from 'examples/jsm/postprocessing/AfterimagePass.js'
  */
 
-THREE.AfterimagePass = function ( damp ) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three'), require('/Users/Tomasz/Documents/repos/three.js/examples/jsm/postprocessing/Pass.js'), require('/Users/Tomasz/Documents/repos/three.js/examples/jsm/shaders/AfterimageShader.js')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three', '/Users/Tomasz/Documents/repos/three.js/examples/jsm/postprocessing/Pass.js', '/Users/Tomasz/Documents/repos/three.js/examples/jsm/shaders/AfterimageShader.js'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE, global.THREE, global.THREE));
+}(this, function (exports, THREE, Pass_js, AfterimageShader_js) { 'use strict';
 
-	THREE.Pass.call( this );
+	/**
+	 * @author HypnosNova / https://www.threejs.org.cn/gallery/
+	 */
 
-	if ( THREE.AfterimageShader === undefined )
-		console.error( "THREE.AfterimagePass relies on THREE.AfterimageShader" );
+	var AfterimagePass = function ( damp ) {
 
-	this.shader = THREE.AfterimageShader;
+		Pass_js.Pass.call( this );
 
-	this.uniforms = THREE.UniformsUtils.clone( this.shader.uniforms );
+		if ( AfterimageShader_js.AfterimageShader === undefined )
+			console.error( "AfterimagePass relies on AfterimageShader" );
 
-	this.uniforms[ "damp" ].value = damp !== undefined ? damp : 0.96;
+		this.shader = AfterimageShader_js.AfterimageShader;
 
-	this.textureComp = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
+		this.uniforms = THREE.UniformsUtils.clone( this.shader.uniforms );
 
-		minFilter: THREE.LinearFilter,
-		magFilter: THREE.NearestFilter,
-		format: THREE.RGBAFormat
+		this.uniforms[ "damp" ].value = damp !== undefined ? damp : 0.96;
 
-	} );
+		this.textureComp = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
 
-	this.textureOld = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
+			minFilter: THREE.LinearFilter,
+			magFilter: THREE.NearestFilter,
+			format: THREE.RGBAFormat
 
-		minFilter: THREE.LinearFilter,
-		magFilter: THREE.NearestFilter,
-		format: THREE.RGBAFormat
+		} );
 
-	} );
+		this.textureOld = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, {
 
-	this.shaderMaterial = new THREE.ShaderMaterial( {
+			minFilter: THREE.LinearFilter,
+			magFilter: THREE.NearestFilter,
+			format: THREE.RGBAFormat
 
-		uniforms: this.uniforms,
-		vertexShader: this.shader.vertexShader,
-		fragmentShader: this.shader.fragmentShader
+		} );
 
-	} );
+		this.shaderMaterial = new THREE.ShaderMaterial( {
 
-	this.compFsQuad = new THREE.Pass.FullScreenQuad( this.shaderMaterial );
+			uniforms: this.uniforms,
+			vertexShader: this.shader.vertexShader,
+			fragmentShader: this.shader.fragmentShader
 
-	var material = new THREE.MeshBasicMaterial();
-	this.copyFsQuad = new THREE.Pass.FullScreenQuad( material );
+		} );
 
-};
+		this.compFsQuad = new Pass_js.Pass.FullScreenQuad( this.shaderMaterial );
 
-THREE.AfterimagePass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
+		var material = new THREE.MeshBasicMaterial();
+		this.copyFsQuad = new Pass_js.Pass.FullScreenQuad( material );
 
-	constructor: THREE.AfterimagePass,
+	};
 
-	render: function ( renderer, writeBuffer, readBuffer ) {
+	AfterimagePass.prototype = Object.assign( Object.create( Pass_js.Pass.prototype ), {
 
-		this.uniforms[ "tOld" ].value = this.textureOld.texture;
-		this.uniforms[ "tNew" ].value = readBuffer.texture;
+		constructor: AfterimagePass,
 
-		renderer.setRenderTarget( this.textureComp );
-		this.compFsQuad.render( renderer );
+		render: function ( renderer, writeBuffer, readBuffer ) {
 
-		this.copyFsQuad.material.map = this.textureComp.texture;
+			this.uniforms[ "tOld" ].value = this.textureOld.texture;
+			this.uniforms[ "tNew" ].value = readBuffer.texture;
 
-		if ( this.renderToScreen ) {
+			renderer.setRenderTarget( this.textureComp );
+			this.compFsQuad.render( renderer );
 
-			renderer.setRenderTarget( null );
-			this.copyFsQuad.render( renderer );
+			this.copyFsQuad.material.map = this.textureComp.texture;
 
-		} else {
+			if ( this.renderToScreen ) {
 
-			renderer.setRenderTarget( writeBuffer );
+				renderer.setRenderTarget( null );
+				this.copyFsQuad.render( renderer );
 
-			if ( this.clear ) renderer.clear();
+			} else {
 
-			this.copyFsQuad.render( renderer );
+				renderer.setRenderTarget( writeBuffer );
+
+				if ( this.clear ) renderer.clear();
+
+				this.copyFsQuad.render( renderer );
+
+			}
+
+			// Swap buffers.
+			var temp = this.textureOld;
+			this.textureOld = this.textureComp;
+			this.textureComp = temp;
+			// Now textureOld contains the latest image, ready for the next frame.
+
+		},
+
+		setSize: function ( width, height ) {
+
+			this.textureComp.setSize( width, height );
+			this.textureOld.setSize( width, height );
 
 		}
 
-		// Swap buffers.
-		var temp = this.textureOld;
-		this.textureOld = this.textureComp;
-		this.textureComp = temp;
-		// Now textureOld contains the latest image, ready for the next frame.
+	} );
 
-	},
+	exports.AfterimagePass = AfterimagePass;
 
-	setSize: function ( width, height ) {
-
-		this.textureComp.setSize( width, height );
-		this.textureOld.setSize( width, height );
-
-	}
-
-} );
+}));

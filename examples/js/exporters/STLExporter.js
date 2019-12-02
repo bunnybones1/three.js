@@ -1,166 +1,180 @@
 /**
- * @author kovacsv / http://kovacsv.hu/
- * @author mrdoob / http://mrdoob.com/
- * @author mudcube / http://mudcu.be/
- * @author Mugen87 / https://github.com/Mugen87
- *
- * Usage:
- *  var exporter = new THREE.STLExporter();
- *
- *  // second argument is a list of options
- *  var data = exporter.parse( mesh, { binary: true } );
- *
+ * Generated from 'examples/jsm/exporters/STLExporter.js'
  */
 
-THREE.STLExporter = function () {};
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-THREE.STLExporter.prototype = {
+	/**
+	 * @author kovacsv / http://kovacsv.hu/
+	 * @author mrdoob / http://mrdoob.com/
+	 * @author mudcube / http://mudcu.be/
+	 * @author Mugen87 / https://github.com/Mugen87
+	 *
+	 * Usage:
+	 *  var exporter = new STLExporter();
+	 *
+	 *  // second argument is a list of options
+	 *  var data = exporter.parse( mesh, { binary: true } );
+	 *
+	 */
 
-	constructor: THREE.STLExporter,
+	var STLExporter = function () {};
 
-	parse: ( function () {
+	STLExporter.prototype = {
 
-		var vector = new THREE.Vector3();
-		var normalMatrixWorld = new THREE.Matrix3();
+		constructor: STLExporter,
 
-		return function parse( scene, options ) {
+		parse: ( function () {
 
-			if ( options === undefined ) options = {};
+			var vector = new THREE.Vector3();
+			var normalMatrixWorld = new THREE.Matrix3();
 
-			var binary = options.binary !== undefined ? options.binary : false;
+			return function parse( scene, options ) {
 
-			//
+				if ( options === undefined ) options = {};
 
-			var objects = [];
-			var triangles = 0;
+				var binary = options.binary !== undefined ? options.binary : false;
 
-			scene.traverse( function ( object ) {
+				//
 
-				if ( object.isMesh ) {
+				var objects = [];
+				var triangles = 0;
 
-					var geometry = object.geometry;
+				scene.traverse( function ( object ) {
 
-					if ( geometry.isBufferGeometry ) {
+					if ( object.isMesh ) {
 
-						geometry = new THREE.Geometry().fromBufferGeometry( geometry );
+						var geometry = object.geometry;
+
+						if ( geometry.isBufferGeometry ) {
+
+							geometry = new THREE.Geometry().fromBufferGeometry( geometry );
+
+						}
+
+						if ( geometry.isGeometry ) {
+
+							triangles += geometry.faces.length;
+
+							objects.push( {
+
+								geometry: geometry,
+								matrixWorld: object.matrixWorld
+
+							} );
+
+						}
 
 					}
 
-					if ( geometry.isGeometry ) {
+				} );
 
-						triangles += geometry.faces.length;
+				if ( binary ) {
 
-						objects.push( {
+					var offset = 80; // skip header
+					var bufferLength = triangles * 2 + triangles * 3 * 4 * 4 + 80 + 4;
+					var arrayBuffer = new ArrayBuffer( bufferLength );
+					var output = new DataView( arrayBuffer );
+					output.setUint32( offset, triangles, true ); offset += 4;
 
-							geometry: geometry,
-							matrixWorld: object.matrixWorld
+					for ( var i = 0, il = objects.length; i < il; i ++ ) {
 
-						} );
+						var object = objects[ i ];
 
-					}
+						var vertices = object.geometry.vertices;
+						var faces = object.geometry.faces;
+						var matrixWorld = object.matrixWorld;
 
-				}
+						normalMatrixWorld.getNormalMatrix( matrixWorld );
 
-			} );
+						for ( var j = 0, jl = faces.length; j < jl; j ++ ) {
 
-			if ( binary ) {
+							var face = faces[ j ];
 
-				var offset = 80; // skip header
-				var bufferLength = triangles * 2 + triangles * 3 * 4 * 4 + 80 + 4;
-				var arrayBuffer = new ArrayBuffer( bufferLength );
-				var output = new DataView( arrayBuffer );
-				output.setUint32( offset, triangles, true ); offset += 4;
+							vector.copy( face.normal ).applyMatrix3( normalMatrixWorld ).normalize();
 
-				for ( var i = 0, il = objects.length; i < il; i ++ ) {
-
-					var object = objects[ i ];
-
-					var vertices = object.geometry.vertices;
-					var faces = object.geometry.faces;
-					var matrixWorld = object.matrixWorld;
-
-					normalMatrixWorld.getNormalMatrix( matrixWorld );
-
-					for ( var j = 0, jl = faces.length; j < jl; j ++ ) {
-
-						var face = faces[ j ];
-
-						vector.copy( face.normal ).applyMatrix3( normalMatrixWorld ).normalize();
-
-						output.setFloat32( offset, vector.x, true ); offset += 4; // normal
-						output.setFloat32( offset, vector.y, true ); offset += 4;
-						output.setFloat32( offset, vector.z, true ); offset += 4;
-
-						var indices = [ face.a, face.b, face.c ];
-
-						for ( var k = 0; k < 3; k ++ ) {
-
-							vector.copy( vertices[ indices[ k ] ] ).applyMatrix4( matrixWorld );
-
-							output.setFloat32( offset, vector.x, true ); offset += 4; // vertices
+							output.setFloat32( offset, vector.x, true ); offset += 4; // normal
 							output.setFloat32( offset, vector.y, true ); offset += 4;
 							output.setFloat32( offset, vector.z, true ); offset += 4;
 
-						}
+							var indices = [ face.a, face.b, face.c ];
 
-						output.setUint16( offset, 0, true ); offset += 2; // attribute byte count
+							for ( var k = 0; k < 3; k ++ ) {
 
-					}
+								vector.copy( vertices[ indices[ k ] ] ).applyMatrix4( matrixWorld );
 
-				}
+								output.setFloat32( offset, vector.x, true ); offset += 4; // vertices
+								output.setFloat32( offset, vector.y, true ); offset += 4;
+								output.setFloat32( offset, vector.z, true ); offset += 4;
 
-				return output;
+							}
 
-			} else {
-
-				var output = '';
-
-				output += 'solid exported\n';
-
-				for ( var i = 0, il = objects.length; i < il; i ++ ) {
-
-					var object = objects[ i ];
-
-					var vertices = object.geometry.vertices;
-					var faces = object.geometry.faces;
-					var matrixWorld = object.matrixWorld;
-
-					normalMatrixWorld.getNormalMatrix( matrixWorld );
-
-					for ( var j = 0, jl = faces.length; j < jl; j ++ ) {
-
-						var face = faces[ j ];
-
-						vector.copy( face.normal ).applyMatrix3( normalMatrixWorld ).normalize();
-
-						output += '\tfacet normal ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
-						output += '\t\touter loop\n';
-
-						var indices = [ face.a, face.b, face.c ];
-
-						for ( var k = 0; k < 3; k ++ ) {
-
-							vector.copy( vertices[ indices[ k ] ] ).applyMatrix4( matrixWorld );
-
-							output += '\t\t\tvertex ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
+							output.setUint16( offset, 0, true ); offset += 2; // attribute byte count
 
 						}
 
-						output += '\t\tendloop\n';
-						output += '\tendfacet\n';
+					}
+
+					return output;
+
+				} else {
+
+					var output = '';
+
+					output += 'solid exported\n';
+
+					for ( var i = 0, il = objects.length; i < il; i ++ ) {
+
+						var object = objects[ i ];
+
+						var vertices = object.geometry.vertices;
+						var faces = object.geometry.faces;
+						var matrixWorld = object.matrixWorld;
+
+						normalMatrixWorld.getNormalMatrix( matrixWorld );
+
+						for ( var j = 0, jl = faces.length; j < jl; j ++ ) {
+
+							var face = faces[ j ];
+
+							vector.copy( face.normal ).applyMatrix3( normalMatrixWorld ).normalize();
+
+							output += '\tfacet normal ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
+							output += '\t\touter loop\n';
+
+							var indices = [ face.a, face.b, face.c ];
+
+							for ( var k = 0; k < 3; k ++ ) {
+
+								vector.copy( vertices[ indices[ k ] ] ).applyMatrix4( matrixWorld );
+
+								output += '\t\t\tvertex ' + vector.x + ' ' + vector.y + ' ' + vector.z + '\n';
+
+							}
+
+							output += '\t\tendloop\n';
+							output += '\tendfacet\n';
+
+						}
 
 					}
 
+					output += 'endsolid exported\n';
+
+					return output;
+
 				}
 
-				output += 'endsolid exported\n';
+			};
 
-				return output;
+		}() )
 
-			}
+	};
 
-		};
+	exports.STLExporter = STLExporter;
 
-	}() )
-
-};
+}));

@@ -1,59 +1,73 @@
 /**
- * @author alteredq / http://alteredqualia.com/
+ * Generated from 'examples/jsm/postprocessing/SavePass.js'
  */
 
-THREE.SavePass = function ( renderTarget ) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three'), require('/Users/Tomasz/Documents/repos/three.js/examples/jsm/postprocessing/Pass.js'), require('/Users/Tomasz/Documents/repos/three.js/examples/jsm/shaders/CopyShader.js')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three', '/Users/Tomasz/Documents/repos/three.js/examples/jsm/postprocessing/Pass.js', '/Users/Tomasz/Documents/repos/three.js/examples/jsm/shaders/CopyShader.js'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE, global.THREE, global.THREE));
+}(this, function (exports, THREE, Pass_js, CopyShader_js) { 'use strict';
 
-	THREE.Pass.call( this );
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 */
 
-	if ( THREE.CopyShader === undefined )
-		console.error( "THREE.SavePass relies on THREE.CopyShader" );
+	var SavePass = function ( renderTarget ) {
 
-	var shader = THREE.CopyShader;
+		Pass_js.Pass.call( this );
 
-	this.textureID = "tDiffuse";
+		if ( CopyShader_js.CopyShader === undefined )
+			console.error( "SavePass relies on CopyShader" );
 
-	this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+		var shader = CopyShader_js.CopyShader;
 
-	this.material = new THREE.ShaderMaterial( {
+		this.textureID = "tDiffuse";
 
-		uniforms: this.uniforms,
-		vertexShader: shader.vertexShader,
-		fragmentShader: shader.fragmentShader
+		this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
 
-	} );
+		this.material = new THREE.ShaderMaterial( {
 
-	this.renderTarget = renderTarget;
+			uniforms: this.uniforms,
+			vertexShader: shader.vertexShader,
+			fragmentShader: shader.fragmentShader
 
-	if ( this.renderTarget === undefined ) {
+		} );
 
-		this.renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false } );
-		this.renderTarget.texture.name = "SavePass.rt";
+		this.renderTarget = renderTarget;
 
-	}
+		if ( this.renderTarget === undefined ) {
 
-	this.needsSwap = false;
-
-	this.fsQuad = new THREE.Pass.FullScreenQuad( this.material );
-
-};
-
-THREE.SavePass.prototype = Object.assign( Object.create( THREE.Pass.prototype ), {
-
-	constructor: THREE.SavePass,
-
-	render: function ( renderer, writeBuffer, readBuffer ) {
-
-		if ( this.uniforms[ this.textureID ] ) {
-
-			this.uniforms[ this.textureID ].value = readBuffer.texture;
+			this.renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+			this.renderTarget.texture.name = "SavePass.rt";
 
 		}
 
-		renderer.setRenderTarget( this.renderTarget );
-		if ( this.clear ) renderer.clear();
-		this.fsQuad.render( renderer );
+		this.needsSwap = false;
 
-	}
+		this.fsQuad = new Pass_js.Pass.FullScreenQuad( this.material );
 
-} );
+	};
+
+	SavePass.prototype = Object.assign( Object.create( Pass_js.Pass.prototype ), {
+
+		constructor: SavePass,
+
+		render: function ( renderer, writeBuffer, readBuffer ) {
+
+			if ( this.uniforms[ this.textureID ] ) {
+
+				this.uniforms[ this.textureID ].value = readBuffer.texture;
+
+			}
+
+			renderer.setRenderTarget( this.renderTarget );
+			if ( this.clear ) renderer.clear();
+			this.fsQuad.render( renderer );
+
+		}
+
+	} );
+
+	exports.SavePass = SavePass;
+
+}));

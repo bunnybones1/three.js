@@ -1,114 +1,128 @@
 /**
- *
- * Creator of typical test AnimationClips / KeyframeTracks
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
+ * Generated from 'examples/jsm/animation/AnimationClipCreator.js'
  */
 
-THREE.AnimationClipCreator = function () {};
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-THREE.AnimationClipCreator.CreateRotationAnimation = function ( period, axis ) {
+	/**
+	 *
+	 * Creator of typical test AnimationClips / KeyframeTracks
+	 *
+	 * @author Ben Houston / http://clara.io/
+	 * @author David Sarno / http://lighthaus.us/
+	 */
 
-	var times = [ 0, period ], values = [ 0, 360 ];
+	var AnimationClipCreator = function () {};
 
-	axis = axis || 'x';
-	var trackName = '.rotation[' + axis + ']';
+	AnimationClipCreator.CreateRotationAnimation = function ( period, axis ) {
 
-	var track = new THREE.NumberKeyframeTrack( trackName, times, values );
+		var times = [ 0, period ], values = [ 0, 360 ];
 
-	return new THREE.AnimationClip( null, period, [ track ] );
+		axis = axis || 'x';
+		var trackName = '.rotation[' + axis + ']';
 
-};
+		var track = new THREE.NumberKeyframeTrack( trackName, times, values );
 
-THREE.AnimationClipCreator.CreateScaleAxisAnimation = function ( period, axis ) {
+		return new THREE.AnimationClip( null, period, [ track ] );
 
-	var times = [ 0, period ], values = [ 0, 1 ];
+	};
 
-	axis = axis || 'x';
-	var trackName = '.scale[' + axis + ']';
+	AnimationClipCreator.CreateScaleAxisAnimation = function ( period, axis ) {
 
-	var track = new THREE.NumberKeyframeTrack( trackName, times, values );
+		var times = [ 0, period ], values = [ 0, 1 ];
 
-	return new THREE.AnimationClip( null, period, [ track ] );
+		axis = axis || 'x';
+		var trackName = '.scale[' + axis + ']';
 
-};
+		var track = new THREE.NumberKeyframeTrack( trackName, times, values );
 
-THREE.AnimationClipCreator.CreateShakeAnimation = function ( duration, shakeScale ) {
+		return new THREE.AnimationClip( null, period, [ track ] );
 
-	var times = [], values = [], tmp = new THREE.Vector3();
+	};
 
-	for ( var i = 0; i < duration * 10; i ++ ) {
+	AnimationClipCreator.CreateShakeAnimation = function ( duration, shakeScale ) {
 
-		times.push( i / 10 );
+		var times = [], values = [], tmp = new THREE.Vector3();
 
-		tmp.set( Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0 ).
-			multiply( shakeScale ).
-			toArray( values, values.length );
+		for ( var i = 0; i < duration * 10; i ++ ) {
 
-	}
+			times.push( i / 10 );
 
-	var trackName = '.position';
+			tmp.set( Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0, Math.random() * 2.0 - 1.0 ).
+				multiply( shakeScale ).
+				toArray( values, values.length );
 
-	var track = new THREE.VectorKeyframeTrack( trackName, times, values );
+		}
 
-	return new THREE.AnimationClip( null, duration, [ track ] );
+		var trackName = '.position';
 
-};
+		var track = new THREE.VectorKeyframeTrack( trackName, times, values );
 
+		return new THREE.AnimationClip( null, duration, [ track ] );
 
-THREE.AnimationClipCreator.CreatePulsationAnimation = function ( duration, pulseScale ) {
-
-	var times = [], values = [], tmp = new THREE.Vector3();
-
-	for ( var i = 0; i < duration * 10; i ++ ) {
-
-		times.push( i / 10 );
-
-		var scaleFactor = Math.random() * pulseScale;
-		tmp.set( scaleFactor, scaleFactor, scaleFactor ).
-			toArray( values, values.length );
-
-	}
-
-	var trackName = '.scale';
-
-	var track = new THREE.VectorKeyframeTrack( trackName, times, values );
-
-	return new THREE.AnimationClip( null, duration, [ track ] );
-
-};
+	};
 
 
-THREE.AnimationClipCreator.CreateVisibilityAnimation = function ( duration ) {
+	AnimationClipCreator.CreatePulsationAnimation = function ( duration, pulseScale ) {
 
-	var times = [ 0, duration / 2, duration ], values = [ true, false, true ];
+		var times = [], values = [], tmp = new THREE.Vector3();
 
-	var trackName = '.visible';
+		for ( var i = 0; i < duration * 10; i ++ ) {
 
-	var track = new THREE.BooleanKeyframeTrack( trackName, times, values );
+			times.push( i / 10 );
 
-	return new THREE.AnimationClip( null, duration, [ track ] );
+			var scaleFactor = Math.random() * pulseScale;
+			tmp.set( scaleFactor, scaleFactor, scaleFactor ).
+				toArray( values, values.length );
 
-};
+		}
+
+		var trackName = '.scale';
+
+		var track = new THREE.VectorKeyframeTrack( trackName, times, values );
+
+		return new THREE.AnimationClip( null, duration, [ track ] );
+
+	};
 
 
-THREE.AnimationClipCreator.CreateMaterialColorAnimation = function ( duration, colors ) {
+	AnimationClipCreator.CreateVisibilityAnimation = function ( duration ) {
 
-	var times = [], values = [],
-		timeStep = duration / colors.length;
+		var times = [ 0, duration / 2, duration ], values = [ true, false, true ];
 
-	for ( var i = 0; i <= colors.length; i ++ ) {
+		var trackName = '.visible';
 
-		times.push( i * timeStep );
-		values.push( colors[ i % colors.length ] );
+		var track = new THREE.BooleanKeyframeTrack( trackName, times, values );
 
-	}
+		return new THREE.AnimationClip( null, duration, [ track ] );
 
-	var trackName = '.material[0].color';
+	};
 
-	var track = new THREE.ColorKeyframeTrack( trackName, times, values );
 
-	return new THREE.AnimationClip( null, duration, [ track ] );
+	AnimationClipCreator.CreateMaterialColorAnimation = function ( duration, colors ) {
 
-};
+		var times = [], values = [],
+			timeStep = duration / colors.length;
+
+		for ( var i = 0; i <= colors.length; i ++ ) {
+
+			times.push( i * timeStep );
+			values.push( colors[ i % colors.length ] );
+
+		}
+
+		var trackName = '.material[0].color';
+
+		var track = new THREE.ColorKeyframeTrack( trackName, times, values );
+
+		return new THREE.AnimationClip( null, duration, [ track ] );
+
+	};
+
+	exports.AnimationClipCreator = AnimationClipCreator;
+
+}));

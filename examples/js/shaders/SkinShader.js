@@ -1,686 +1,702 @@
 /**
- * @author alteredq / http://alteredqualia.com/
- *
+ * Generated from 'examples/jsm/shaders/SkinShader.js'
  */
 
-/* ------------------------------------------------------------------------------------------
-//	Basic skin shader
-//		- per-pixel Blinn-Phong diffuse term mixed with half-Lambert wrap-around term (per color component)
-//		- physically based specular term (Kelemen/Szirmay-Kalos specular reflectance)
-//
-//		- diffuse map
-//		- bump map
-//		- specular map
-//		- point, directional and hemisphere lights (use with "lights: true" material option)
-//		- fog (use with "fog: true" material option)
-//
-// ------------------------------------------------------------------------------------------ */
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-THREE.SkinShaderBasic = {
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 */
 
-	uniforms: THREE.UniformsUtils.merge( [
+	/* ------------------------------------------------------------------------------------------
+	//	Basic skin shader
+	//		- per-pixel Blinn-Phong diffuse term mixed with half-Lambert wrap-around term (per color component)
+	//		- physically based specular term (Kelemen/Szirmay-Kalos specular reflectance)
+	//
+	//		- diffuse map
+	//		- bump map
+	//		- specular map
+	//		- point, directional and hemisphere lights (use with "lights: true" material option)
+	//		- fog (use with "fog: true" material option)
+	//
+	// ------------------------------------------------------------------------------------------ */
 
-		THREE.UniformsLib[ "fog" ],
-		THREE.UniformsLib[ "lights" ],
+	var SkinShaderBasic = {
 
-		{
+		uniforms: THREE.UniformsUtils.merge( [
 
-			"enableBump": { value: 0 },
-			"enableSpecular": { value: 0 },
+			THREE.UniformsLib[ "fog" ],
+			THREE.UniformsLib[ "lights" ],
 
-			"tDiffuse": { value: null },
-			"tBeckmann": { value: null },
+			{
 
-			"diffuse": { value: new THREE.Color( 0xeeeeee ) },
-			"specular": { value: new THREE.Color( 0x111111 ) },
-			"opacity": { value: 1 },
+				"enableBump": { value: 0 },
+				"enableSpecular": { value: 0 },
 
-			"uRoughness": { value: 0.15 },
-			"uSpecularBrightness": { value: 0.75 },
+				"tDiffuse": { value: null },
+				"tBeckmann": { value: null },
 
-			"bumpMap": { value: null },
-			"bumpScale": { value: 1 },
+				"diffuse": { value: new THREE.Color( 0xeeeeee ) },
+				"specular": { value: new THREE.Color( 0x111111 ) },
+				"opacity": { value: 1 },
 
-			"specularMap": { value: null },
+				"uRoughness": { value: 0.15 },
+				"uSpecularBrightness": { value: 0.75 },
 
-			"offsetRepeat": { value: new THREE.Vector4( 0, 0, 1, 1 ) },
+				"bumpMap": { value: null },
+				"bumpScale": { value: 1 },
 
-			"uWrapRGB": { value: new THREE.Vector3( 0.75, 0.375, 0.1875 ) }
+				"specularMap": { value: null },
 
-		}
+				"offsetRepeat": { value: new THREE.Vector4( 0, 0, 1, 1 ) },
 
-	] ),
+				"uWrapRGB": { value: new THREE.Vector3( 0.75, 0.375, 0.1875 ) }
 
-	vertexShader: [
+			}
 
-		"uniform vec4 offsetRepeat;",
+		] ),
 
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+		vertexShader: [
 
-		"varying vec3 vViewPosition;",
+			"uniform vec4 offsetRepeat;",
 
-		THREE.ShaderChunk[ "common" ],
-		THREE.ShaderChunk[ "lights_pars_begin" ],
-		THREE.ShaderChunk[ "fog_pars_vertex" ],
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		"void main() {",
+			"varying vec3 vViewPosition;",
 
-		"	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
-		"	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+			THREE.ShaderChunk[ "common" ],
+			THREE.ShaderChunk[ "lights_pars_begin" ],
+			THREE.ShaderChunk[ "fog_pars_vertex" ],
 
-		"	vViewPosition = -mvPosition.xyz;",
+			"void main() {",
 
-		"	vNormal = normalize( normalMatrix * normal );",
+			"	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+			"	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
 
-		"	vUv = uv * offsetRepeat.zw + offsetRepeat.xy;",
+			"	vViewPosition = -mvPosition.xyz;",
 
-		"	gl_Position = projectionMatrix * mvPosition;",
+			"	vNormal = normalize( normalMatrix * normal );",
 
-		THREE.ShaderChunk[ "fog_vertex" ],
+			"	vUv = uv * offsetRepeat.zw + offsetRepeat.xy;",
 
-		"}"
+			"	gl_Position = projectionMatrix * mvPosition;",
 
-	].join( "\n" ),
+			THREE.ShaderChunk[ "fog_vertex" ],
 
-	fragmentShader: [
+			"}"
 
-		"#define USE_BUMPMAP",
+		].join( "\n" ),
 
-		"uniform bool enableBump;",
-		"uniform bool enableSpecular;",
+		fragmentShader: [
 
-		"uniform vec3 diffuse;",
-		"uniform vec3 specular;",
-		"uniform float opacity;",
+			"#define USE_BUMPMAP",
 
-		"uniform float uRoughness;",
-		"uniform float uSpecularBrightness;",
+			"uniform bool enableBump;",
+			"uniform bool enableSpecular;",
 
-		"uniform vec3 uWrapRGB;",
+			"uniform vec3 diffuse;",
+			"uniform vec3 specular;",
+			"uniform float opacity;",
 
-		"uniform sampler2D tDiffuse;",
-		"uniform sampler2D tBeckmann;",
+			"uniform float uRoughness;",
+			"uniform float uSpecularBrightness;",
 
-		"uniform sampler2D specularMap;",
+			"uniform vec3 uWrapRGB;",
 
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+			"uniform sampler2D tDiffuse;",
+			"uniform sampler2D tBeckmann;",
 
-		"varying vec3 vViewPosition;",
+			"uniform sampler2D specularMap;",
 
-		THREE.ShaderChunk[ "common" ],
-		THREE.ShaderChunk[ "bsdfs" ],
-		THREE.ShaderChunk[ "packing" ],
-		THREE.ShaderChunk[ "lights_pars_begin" ],
-		THREE.ShaderChunk[ "fog_pars_fragment" ],
-		THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		// Fresnel term
+			"varying vec3 vViewPosition;",
 
-		"float fresnelReflectance( vec3 H, vec3 V, float F0 ) {",
+			THREE.ShaderChunk[ "common" ],
+			THREE.ShaderChunk[ "bsdfs" ],
+			THREE.ShaderChunk[ "packing" ],
+			THREE.ShaderChunk[ "lights_pars_begin" ],
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
+			THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
 
-		"	float base = 1.0 - dot( V, H );",
-		"	float exponential = pow( base, 5.0 );",
+			// Fresnel term
 
-		"	return exponential + F0 * ( 1.0 - exponential );",
+			"float fresnelReflectance( vec3 H, vec3 V, float F0 ) {",
 
-		"}",
+			"	float base = 1.0 - dot( V, H );",
+			"	float exponential = pow( base, 5.0 );",
 
-		// Kelemen/Szirmay-Kalos specular BRDF
+			"	return exponential + F0 * ( 1.0 - exponential );",
 
-		"float KS_Skin_Specular( vec3 N,", // Bumped surface normal
-		"	vec3 L,", // Points to light
-		"	vec3 V,", // Points to eye
-		"	float m,", // Roughness
-		"	float rho_s", // Specular brightness
-		"	) {",
+			"}",
 
-		"	float result = 0.0;",
-		"	float ndotl = dot( N, L );",
+			// Kelemen/Szirmay-Kalos specular BRDF
 
-		"	if( ndotl > 0.0 ) {",
+			"float KS_Skin_Specular( vec3 N,", // Bumped surface normal
+			"	vec3 L,", // Points to light
+			"	vec3 V,", // Points to eye
+			"	float m,", // Roughness
+			"	float rho_s", // Specular brightness
+			"	) {",
 
-		"		vec3 h = L + V;", // Unnormalized half-way vector
-		"		vec3 H = normalize( h );",
+			"	float result = 0.0;",
+			"	float ndotl = dot( N, L );",
 
-		"		float ndoth = dot( N, H );",
+			"	if( ndotl > 0.0 ) {",
 
-		"		float PH = pow( 2.0 * texture2D( tBeckmann, vec2( ndoth, m ) ).x, 10.0 );",
+			"		vec3 h = L + V;", // Unnormalized half-way vector
+			"		vec3 H = normalize( h );",
 
-		"		float F = fresnelReflectance( H, V, 0.028 );",
-		"		float frSpec = max( PH * F / dot( h, h ), 0.0 );",
+			"		float ndoth = dot( N, H );",
 
-		"		result = ndotl * rho_s * frSpec;", // BRDF * dot(N,L) * rho_s
+			"		float PH = pow( 2.0 * texture2D( tBeckmann, vec2( ndoth, m ) ).x, 10.0 );",
 
-		"	}",
+			"		float F = fresnelReflectance( H, V, 0.028 );",
+			"		float frSpec = max( PH * F / dot( h, h ), 0.0 );",
 
-		"	return result;",
+			"		result = ndotl * rho_s * frSpec;", // BRDF * dot(N,L) * rho_s
 
-		"}",
+			"	}",
 
-		"void main() {",
+			"	return result;",
 
-		"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
-		"	vec4 diffuseColor = vec4( diffuse, opacity );",
+			"}",
 
-		"	vec4 colDiffuse = texture2D( tDiffuse, vUv );",
-		"	colDiffuse.rgb *= colDiffuse.rgb;",
+			"void main() {",
 
-		"	diffuseColor = diffuseColor * colDiffuse;",
+			"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
+			"	vec4 diffuseColor = vec4( diffuse, opacity );",
 
-		"	vec3 normal = normalize( vNormal );",
-		"	vec3 viewerDirection = normalize( vViewPosition );",
+			"	vec4 colDiffuse = texture2D( tDiffuse, vUv );",
+			"	colDiffuse.rgb *= colDiffuse.rgb;",
 
-		"	float specularStrength;",
+			"	diffuseColor = diffuseColor * colDiffuse;",
 
-		"	if ( enableSpecular ) {",
+			"	vec3 normal = normalize( vNormal );",
+			"	vec3 viewerDirection = normalize( vViewPosition );",
 
-		"		vec4 texelSpecular = texture2D( specularMap, vUv );",
-		"		specularStrength = texelSpecular.r;",
+			"	float specularStrength;",
 
-		"	} else {",
+			"	if ( enableSpecular ) {",
 
-		"		specularStrength = 1.0;",
+			"		vec4 texelSpecular = texture2D( specularMap, vUv );",
+			"		specularStrength = texelSpecular.r;",
 
-		"	}",
+			"	} else {",
 
-		"	#ifdef USE_BUMPMAP",
+			"		specularStrength = 1.0;",
 
-		"		if ( enableBump ) normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );",
+			"	}",
 
-		"	#endif",
+			"	#ifdef USE_BUMPMAP",
 
-		// point lights
+			"		if ( enableBump ) normal = perturbNormalArb( -vViewPosition, normal, dHdxy_fwd() );",
 
-		"	vec3 totalSpecularLight = vec3( 0.0 );",
-		"	vec3 totalDiffuseLight = vec3( 0.0 );",
+			"	#endif",
 
-		"	#if NUM_POINT_LIGHTS > 0",
+			// point lights
 
-		"		for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {",
+			"	vec3 totalSpecularLight = vec3( 0.0 );",
+			"	vec3 totalDiffuseLight = vec3( 0.0 );",
 
-		"			vec3 lVector = pointLights[ i ].position + vViewPosition.xyz;",
+			"	#if NUM_POINT_LIGHTS > 0",
 
-		"			float attenuation = calcLightAttenuation( length( lVector ), pointLights[ i ].distance, pointLights[ i ].decay );",
+			"		for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {",
 
-		"			lVector = normalize( lVector );",
+			"			vec3 lVector = pointLights[ i ].position + vViewPosition.xyz;",
 
-		"			float pointDiffuseWeightFull = max( dot( normal, lVector ), 0.0 );",
-		"			float pointDiffuseWeightHalf = max( 0.5 * dot( normal, lVector ) + 0.5, 0.0 );",
-		"			vec3 pointDiffuseWeight = mix( vec3 ( pointDiffuseWeightFull ), vec3( pointDiffuseWeightHalf ), uWrapRGB );",
+			"			float attenuation = calcLightAttenuation( length( lVector ), pointLights[ i ].distance, pointLights[ i ].decay );",
 
-		"			float pointSpecularWeight = KS_Skin_Specular( normal, lVector, viewerDirection, uRoughness, uSpecularBrightness );",
+			"			lVector = normalize( lVector );",
 
-		"			totalDiffuseLight += pointLight[ i ].color * ( pointDiffuseWeight * attenuation );",
-		"			totalSpecularLight += pointLight[ i ].color * specular * ( pointSpecularWeight * specularStrength * attenuation );",
+			"			float pointDiffuseWeightFull = max( dot( normal, lVector ), 0.0 );",
+			"			float pointDiffuseWeightHalf = max( 0.5 * dot( normal, lVector ) + 0.5, 0.0 );",
+			"			vec3 pointDiffuseWeight = mix( vec3 ( pointDiffuseWeightFull ), vec3( pointDiffuseWeightHalf ), uWrapRGB );",
 
-		"		}",
+			"			float pointSpecularWeight = KS_Skin_Specular( normal, lVector, viewerDirection, uRoughness, uSpecularBrightness );",
 
-		"	#endif",
+			"			totalDiffuseLight += pointLight[ i ].color * ( pointDiffuseWeight * attenuation );",
+			"			totalSpecularLight += pointLight[ i ].color * specular * ( pointSpecularWeight * specularStrength * attenuation );",
 
-		// directional lights
+			"		}",
 
-		"	#if NUM_DIR_LIGHTS > 0",
+			"	#endif",
 
-		"		for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {",
+			// directional lights
 
-		"			vec3 dirVector = directionalLights[ i ].direction;",
+			"	#if NUM_DIR_LIGHTS > 0",
 
-		"			float dirDiffuseWeightFull = max( dot( normal, dirVector ), 0.0 );",
-		"			float dirDiffuseWeightHalf = max( 0.5 * dot( normal, dirVector ) + 0.5, 0.0 );",
-		"			vec3 dirDiffuseWeight = mix( vec3 ( dirDiffuseWeightFull ), vec3( dirDiffuseWeightHalf ), uWrapRGB );",
+			"		for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {",
 
-		"			float dirSpecularWeight = KS_Skin_Specular( normal, dirVector, viewerDirection, uRoughness, uSpecularBrightness );",
+			"			vec3 dirVector = directionalLights[ i ].direction;",
 
-		"			totalDiffuseLight += directionalLights[ i ].color * dirDiffuseWeight;",
-		"			totalSpecularLight += directionalLights[ i ].color * ( dirSpecularWeight * specularStrength );",
+			"			float dirDiffuseWeightFull = max( dot( normal, dirVector ), 0.0 );",
+			"			float dirDiffuseWeightHalf = max( 0.5 * dot( normal, dirVector ) + 0.5, 0.0 );",
+			"			vec3 dirDiffuseWeight = mix( vec3 ( dirDiffuseWeightFull ), vec3( dirDiffuseWeightHalf ), uWrapRGB );",
 
-		"		}",
+			"			float dirSpecularWeight = KS_Skin_Specular( normal, dirVector, viewerDirection, uRoughness, uSpecularBrightness );",
 
-		"	#endif",
+			"			totalDiffuseLight += directionalLights[ i ].color * dirDiffuseWeight;",
+			"			totalSpecularLight += directionalLights[ i ].color * ( dirSpecularWeight * specularStrength );",
 
-		// hemisphere lights
+			"		}",
 
-		"	#if NUM_HEMI_LIGHTS > 0",
+			"	#endif",
 
-		"		for ( int i = 0; i < NUM_HEMI_LIGHTS; i ++ ) {",
+			// hemisphere lights
 
-		"			vec3 lVector = hemisphereLightDirection[ i ];",
+			"	#if NUM_HEMI_LIGHTS > 0",
 
-		"			float dotProduct = dot( normal, lVector );",
-		"			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
+			"		for ( int i = 0; i < NUM_HEMI_LIGHTS; i ++ ) {",
 
-		"			totalDiffuseLight += mix( hemisphereLightGroundColor[ i ], hemisphereLightSkyColor[ i ], hemiDiffuseWeight );",
+			"			vec3 lVector = hemisphereLightDirection[ i ];",
 
-		// specular (sky light)
+			"			float dotProduct = dot( normal, lVector );",
+			"			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
 
-		"			float hemiSpecularWeight = 0.0;",
-		"			hemiSpecularWeight += KS_Skin_Specular( normal, lVector, viewerDirection, uRoughness, uSpecularBrightness );",
+			"			totalDiffuseLight += mix( hemisphereLightGroundColor[ i ], hemisphereLightSkyColor[ i ], hemiDiffuseWeight );",
 
-		// specular (ground light)
+			// specular (sky light)
 
-		"			vec3 lVectorGround = -lVector;",
-		"			hemiSpecularWeight += KS_Skin_Specular( normal, lVectorGround, viewerDirection, uRoughness, uSpecularBrightness );",
+			"			float hemiSpecularWeight = 0.0;",
+			"			hemiSpecularWeight += KS_Skin_Specular( normal, lVector, viewerDirection, uRoughness, uSpecularBrightness );",
 
-		"			vec3 hemiSpecularColor = mix( hemisphereLightGroundColor[ i ], hemisphereLightSkyColor[ i ], hemiDiffuseWeight );",
+			// specular (ground light)
 
-		"			totalSpecularLight += hemiSpecularColor * specular * ( hemiSpecularWeight * specularStrength );",
+			"			vec3 lVectorGround = -lVector;",
+			"			hemiSpecularWeight += KS_Skin_Specular( normal, lVectorGround, viewerDirection, uRoughness, uSpecularBrightness );",
 
-		"		}",
+			"			vec3 hemiSpecularColor = mix( hemisphereLightGroundColor[ i ], hemisphereLightSkyColor[ i ], hemiDiffuseWeight );",
 
-		"	#endif",
+			"			totalSpecularLight += hemiSpecularColor * specular * ( hemiSpecularWeight * specularStrength );",
 
-		"	outgoingLight += diffuseColor.xyz * ( totalDiffuseLight + ambientLightColor * diffuse ) + totalSpecularLight;",
+			"		}",
 
-		"	gl_FragColor = linearToOutputTexel( vec4( outgoingLight, diffuseColor.a ) );",	// TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
+			"	#endif",
 
-		THREE.ShaderChunk[ "fog_fragment" ],
+			"	outgoingLight += diffuseColor.xyz * ( totalDiffuseLight + ambientLightColor * diffuse ) + totalSpecularLight;",
 
-		"}"
+			"	gl_FragColor = linearToOutputTexel( vec4( outgoingLight, diffuseColor.a ) );",	// TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
 
-	].join( "\n" )
+			THREE.ShaderChunk[ "fog_fragment" ],
 
-};
+			"}"
 
-/* ------------------------------------------------------------------------------------------
-//	Skin shader
-//		- Blinn-Phong diffuse term (using normal + diffuse maps)
-//		- subsurface scattering approximation by four blur layers
-//		- physically based specular term (Kelemen/Szirmay-Kalos specular reflectance)
-//
-//		- point and directional lights (use with "lights: true" material option)
-//
-//		- based on Nvidia Advanced Skin Rendering GDC 2007 presentation
-//		  and GPU Gems 3 Chapter 14. Advanced Techniques for Realistic Real-Time Skin Rendering
-//
-//			http://developer.download.nvidia.com/presentations/2007/gdc/Advanced_Skin.pdf
-//			http://http.developer.nvidia.com/GPUGems3/gpugems3_ch14.html
-// ------------------------------------------------------------------------------------------ */
+		].join( "\n" )
 
-THREE.SkinShaderAdvanced = {
+	};
 
-	uniforms: THREE.UniformsUtils.merge( [
+	/* ------------------------------------------------------------------------------------------
+	//	Skin shader
+	//		- Blinn-Phong diffuse term (using normal + diffuse maps)
+	//		- subsurface scattering approximation by four blur layers
+	//		- physically based specular term (Kelemen/Szirmay-Kalos specular reflectance)
+	//
+	//		- point and directional lights (use with "lights: true" material option)
+	//
+	//		- based on Nvidia Advanced Skin Rendering GDC 2007 presentation
+	//		  and GPU Gems 3 Chapter 14. Advanced Techniques for Realistic Real-Time Skin Rendering
+	//
+	//			http://developer.download.nvidia.com/presentations/2007/gdc/Advanced_Skin.pdf
+	//			http://http.developer.nvidia.com/GPUGems3/gpugems3_ch14.html
+	// ------------------------------------------------------------------------------------------ */
 
-		THREE.UniformsLib[ "fog" ],
-		THREE.UniformsLib[ "lights" ],
+	var SkinShaderAdvanced = {
 
-		{
-			"passID": { value: 0 },
+		uniforms: THREE.UniformsUtils.merge( [
 
-			"tDiffuse": { value: null },
-			"tNormal": { value: null },
+			THREE.UniformsLib[ "fog" ],
+			THREE.UniformsLib[ "lights" ],
 
-			"tBlur1": { value: null },
-			"tBlur2": { value: null },
-			"tBlur3": { value: null },
-			"tBlur4": { value: null },
+			{
+				"passID": { value: 0 },
 
-			"tBeckmann": { value: null },
+				"tDiffuse": { value: null },
+				"tNormal": { value: null },
 
-			"uNormalScale": { value: 1.0 },
+				"tBlur1": { value: null },
+				"tBlur2": { value: null },
+				"tBlur3": { value: null },
+				"tBlur4": { value: null },
 
-			"diffuse": { value: new THREE.Color( 0xeeeeee ) },
-			"specular": { value: new THREE.Color( 0x111111 ) },
-			"opacity": { value: 1 },
+				"tBeckmann": { value: null },
 
-			"uRoughness": { value: 0.15 },
-			"uSpecularBrightness": { value: 0.75 }
+				"uNormalScale": { value: 1.0 },
 
-		}
+				"diffuse": { value: new THREE.Color( 0xeeeeee ) },
+				"specular": { value: new THREE.Color( 0x111111 ) },
+				"opacity": { value: 1 },
 
-	] ),
+				"uRoughness": { value: 0.15 },
+				"uSpecularBrightness": { value: 0.75 }
 
-	vertexShader: [
+			}
 
-		"#ifdef VERTEX_TEXTURES",
+		] ),
 
-		"	uniform sampler2D tDisplacement;",
-		"	uniform float uDisplacementScale;",
-		"	uniform float uDisplacementBias;",
+		vertexShader: [
 
-		"#endif",
+			"#ifdef VERTEX_TEXTURES",
 
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+			"	uniform sampler2D tDisplacement;",
+			"	uniform float uDisplacementScale;",
+			"	uniform float uDisplacementBias;",
 
-		"varying vec3 vViewPosition;",
+			"#endif",
 
-		THREE.ShaderChunk[ "common" ],
-		THREE.ShaderChunk[ "fog_pars_vertex" ],
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		"void main() {",
+			"varying vec3 vViewPosition;",
 
-		"	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+			THREE.ShaderChunk[ "common" ],
+			THREE.ShaderChunk[ "fog_pars_vertex" ],
 
-		"	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+			"void main() {",
 
-		"	vViewPosition = -mvPosition.xyz;",
+			"	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
 
-		"	vNormal = normalize( normalMatrix * normal );",
+			"	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
 
-		"	vUv = uv;",
+			"	vViewPosition = -mvPosition.xyz;",
 
-		// displacement mapping
+			"	vNormal = normalize( normalMatrix * normal );",
 
-		"	#ifdef VERTEX_TEXTURES",
+			"	vUv = uv;",
 
-		"		vec3 dv = texture2D( tDisplacement, uv ).xyz;",
-		"		float df = uDisplacementScale * dv.x + uDisplacementBias;",
-		"		vec4 displacedPosition = vec4( vNormal.xyz * df, 0.0 ) + mvPosition;",
-		"		gl_Position = projectionMatrix * displacedPosition;",
+			// displacement mapping
 
-		"		#else",
+			"	#ifdef VERTEX_TEXTURES",
 
-		"		gl_Position = projectionMatrix * mvPosition;",
+			"		vec3 dv = texture2D( tDisplacement, uv ).xyz;",
+			"		float df = uDisplacementScale * dv.x + uDisplacementBias;",
+			"		vec4 displacedPosition = vec4( vNormal.xyz * df, 0.0 ) + mvPosition;",
+			"		gl_Position = projectionMatrix * displacedPosition;",
 
-		"	#endif",
+			"		#else",
 
-		THREE.ShaderChunk[ "fog_vertex" ],
+			"		gl_Position = projectionMatrix * mvPosition;",
 
-		"}",
+			"	#endif",
 
+			THREE.ShaderChunk[ "fog_vertex" ],
 
-	].join( "\n" ),
+			"}",
 
-	vertexShaderUV: [
 
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+		].join( "\n" ),
 
-		"varying vec3 vViewPosition;",
+		vertexShaderUV: [
 
-		THREE.ShaderChunk[ "common" ],
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		"void main() {",
+			"varying vec3 vViewPosition;",
 
-		"	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+			THREE.ShaderChunk[ "common" ],
 
-		"	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+			"void main() {",
 
-		"	vViewPosition = -mvPosition.xyz;",
+			"	vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
 
-		"	vNormal = normalize( normalMatrix * normal );",
+			"	vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
 
-		"	vUv = uv;",
+			"	vViewPosition = -mvPosition.xyz;",
 
-		"	gl_Position = vec4( uv.x * 2.0 - 1.0, uv.y * 2.0 - 1.0, 0.0, 1.0 );",
+			"	vNormal = normalize( normalMatrix * normal );",
 
-		"}"
+			"	vUv = uv;",
 
-	].join( "\n" ),
+			"	gl_Position = vec4( uv.x * 2.0 - 1.0, uv.y * 2.0 - 1.0, 0.0, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"uniform vec3 diffuse;",
-		"uniform vec3 specular;",
-		"uniform float opacity;",
+		].join( "\n" ),
 
-		"uniform float uRoughness;",
-		"uniform float uSpecularBrightness;",
+		fragmentShader: [
 
-		"uniform int passID;",
+			"uniform vec3 diffuse;",
+			"uniform vec3 specular;",
+			"uniform float opacity;",
 
-		"uniform sampler2D tDiffuse;",
-		"uniform sampler2D tNormal;",
+			"uniform float uRoughness;",
+			"uniform float uSpecularBrightness;",
 
-		"uniform sampler2D tBlur1;",
-		"uniform sampler2D tBlur2;",
-		"uniform sampler2D tBlur3;",
-		"uniform sampler2D tBlur4;",
+			"uniform int passID;",
 
-		"uniform sampler2D tBeckmann;",
+			"uniform sampler2D tDiffuse;",
+			"uniform sampler2D tNormal;",
 
-		"uniform float uNormalScale;",
+			"uniform sampler2D tBlur1;",
+			"uniform sampler2D tBlur2;",
+			"uniform sampler2D tBlur3;",
+			"uniform sampler2D tBlur4;",
 
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+			"uniform sampler2D tBeckmann;",
 
-		"varying vec3 vViewPosition;",
+			"uniform float uNormalScale;",
 
-		THREE.ShaderChunk[ "common" ],
-		THREE.ShaderChunk[ "lights_pars_begin" ],
-		THREE.ShaderChunk[ "fog_pars_fragment" ],
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		"float fresnelReflectance( vec3 H, vec3 V, float F0 ) {",
+			"varying vec3 vViewPosition;",
 
-		"	float base = 1.0 - dot( V, H );",
-		"	float exponential = pow( base, 5.0 );",
+			THREE.ShaderChunk[ "common" ],
+			THREE.ShaderChunk[ "lights_pars_begin" ],
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
 
-		"	return exponential + F0 * ( 1.0 - exponential );",
+			"float fresnelReflectance( vec3 H, vec3 V, float F0 ) {",
 
-		"}",
+			"	float base = 1.0 - dot( V, H );",
+			"	float exponential = pow( base, 5.0 );",
 
-		// Kelemen/Szirmay-Kalos specular BRDF
+			"	return exponential + F0 * ( 1.0 - exponential );",
 
-		"float KS_Skin_Specular( vec3 N,", // Bumped surface normal
-		"	vec3 L,", // Points to light
-		"	vec3 V,", // Points to eye
-		"	float m,", // Roughness
-		"	float rho_s", // Specular brightness
-		"	) {",
+			"}",
 
-		"	float result = 0.0;",
-		"	float ndotl = dot( N, L );",
+			// Kelemen/Szirmay-Kalos specular BRDF
 
-		"	if( ndotl > 0.0 ) {",
+			"float KS_Skin_Specular( vec3 N,", // Bumped surface normal
+			"	vec3 L,", // Points to light
+			"	vec3 V,", // Points to eye
+			"	float m,", // Roughness
+			"	float rho_s", // Specular brightness
+			"	) {",
 
-		"		vec3 h = L + V;", // Unnormalized half-way vector
-		"		vec3 H = normalize( h );",
+			"	float result = 0.0;",
+			"	float ndotl = dot( N, L );",
 
-		"		float ndoth = dot( N, H );",
+			"	if( ndotl > 0.0 ) {",
 
-		"		float PH = pow( 2.0 * texture2D( tBeckmann, vec2( ndoth, m ) ).x, 10.0 );",
-		"		float F = fresnelReflectance( H, V, 0.028 );",
-		"		float frSpec = max( PH * F / dot( h, h ), 0.0 );",
+			"		vec3 h = L + V;", // Unnormalized half-way vector
+			"		vec3 H = normalize( h );",
 
-		"		result = ndotl * rho_s * frSpec;", // BRDF * dot(N,L) * rho_s
+			"		float ndoth = dot( N, H );",
 
-		"	}",
+			"		float PH = pow( 2.0 * texture2D( tBeckmann, vec2( ndoth, m ) ).x, 10.0 );",
+			"		float F = fresnelReflectance( H, V, 0.028 );",
+			"		float frSpec = max( PH * F / dot( h, h ), 0.0 );",
 
-		"	return result;",
+			"		result = ndotl * rho_s * frSpec;", // BRDF * dot(N,L) * rho_s
 
-		"}",
+			"	}",
 
-		"void main() {",
+			"	return result;",
 
-		"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
-		"	vec4 diffuseColor = vec4( diffuse, opacity );",
+			"}",
 
-		"	vec4 mSpecular = vec4( specular, opacity );",
+			"void main() {",
 
-		"	vec4 colDiffuse = texture2D( tDiffuse, vUv );",
-		"	colDiffuse *= colDiffuse;",
+			"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
+			"	vec4 diffuseColor = vec4( diffuse, opacity );",
 
-		"	diffuseColor *= colDiffuse;",
+			"	vec4 mSpecular = vec4( specular, opacity );",
 
-		// normal mapping
+			"	vec4 colDiffuse = texture2D( tDiffuse, vUv );",
+			"	colDiffuse *= colDiffuse;",
 
-		"	vec4 posAndU = vec4( -vViewPosition, vUv.x );",
-		"	vec4 posAndU_dx = dFdx( posAndU ),  posAndU_dy = dFdy( posAndU );",
-		"	vec3 tangent = posAndU_dx.w * posAndU_dx.xyz + posAndU_dy.w * posAndU_dy.xyz;",
-		"	vec3 normal = normalize( vNormal );",
-		"	vec3 binormal = normalize( cross( tangent, normal ) );",
-		"	tangent = cross( normal, binormal );",	// no normalization required
-		"	mat3 tsb = mat3( tangent, binormal, normal );",
+			"	diffuseColor *= colDiffuse;",
 
-		"	vec3 normalTex = texture2D( tNormal, vUv ).xyz * 2.0 - 1.0;",
-		"	normalTex.xy *= uNormalScale;",
-		"	normalTex = normalize( normalTex );",
+			// normal mapping
 
-		"	vec3 finalNormal = tsb * normalTex;",
-		"	normal = normalize( finalNormal );",
+			"	vec4 posAndU = vec4( -vViewPosition, vUv.x );",
+			"	vec4 posAndU_dx = dFdx( posAndU ),  posAndU_dy = dFdy( posAndU );",
+			"	vec3 tangent = posAndU_dx.w * posAndU_dx.xyz + posAndU_dy.w * posAndU_dy.xyz;",
+			"	vec3 normal = normalize( vNormal );",
+			"	vec3 binormal = normalize( cross( tangent, normal ) );",
+			"	tangent = cross( normal, binormal );",	// no normalization required
+			"	mat3 tsb = mat3( tangent, binormal, normal );",
 
-		"	vec3 viewerDirection = normalize( vViewPosition );",
+			"	vec3 normalTex = texture2D( tNormal, vUv ).xyz * 2.0 - 1.0;",
+			"	normalTex.xy *= uNormalScale;",
+			"	normalTex = normalize( normalTex );",
 
-		// point lights
+			"	vec3 finalNormal = tsb * normalTex;",
+			"	normal = normalize( finalNormal );",
 
-		"	vec3 totalDiffuseLight = vec3( 0.0 );",
-		"	vec3 totalSpecularLight = vec3( 0.0 );",
+			"	vec3 viewerDirection = normalize( vViewPosition );",
 
-		"	#if NUM_POINT_LIGHTS > 0",
+			// point lights
 
-		"	for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {",
+			"	vec3 totalDiffuseLight = vec3( 0.0 );",
+			"	vec3 totalSpecularLight = vec3( 0.0 );",
 
-		"		vec3 pointVector = normalize( pointLights[ i ].direction );",
-		"		float attenuation = calcLightAttenuation( length( lVector ), pointLights[ i ].distance, pointLights[ i ].decay );",
+			"	#if NUM_POINT_LIGHTS > 0",
 
-		"		float pointDiffuseWeight = max( dot( normal, pointVector ), 0.0 );",
+			"	for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {",
 
-		"		totalDiffuseLight += pointLightColor[ i ] * ( pointDiffuseWeight * attenuation );",
+			"		vec3 pointVector = normalize( pointLights[ i ].direction );",
+			"		float attenuation = calcLightAttenuation( length( lVector ), pointLights[ i ].distance, pointLights[ i ].decay );",
 
-		"		if ( passID == 1 ) {",
+			"		float pointDiffuseWeight = max( dot( normal, pointVector ), 0.0 );",
 
-		"			float pointSpecularWeight = KS_Skin_Specular( normal, pointVector, viewerDirection, uRoughness, uSpecularBrightness );",
+			"		totalDiffuseLight += pointLightColor[ i ] * ( pointDiffuseWeight * attenuation );",
 
-		"			totalSpecularLight += pointLightColor[ i ] * mSpecular.xyz * ( pointSpecularWeight * attenuation );",
+			"		if ( passID == 1 ) {",
 
-		"		}",
+			"			float pointSpecularWeight = KS_Skin_Specular( normal, pointVector, viewerDirection, uRoughness, uSpecularBrightness );",
 
-		"	}",
+			"			totalSpecularLight += pointLightColor[ i ] * mSpecular.xyz * ( pointSpecularWeight * attenuation );",
 
-		"	#endif",
+			"		}",
 
-		// directional lights
+			"	}",
 
-		"	#if NUM_DIR_LIGHTS > 0",
+			"	#endif",
 
-		"		for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {",
+			// directional lights
 
-		"			vec3 dirVector = directionalLights[ i ].direction;",
+			"	#if NUM_DIR_LIGHTS > 0",
 
-		"			float dirDiffuseWeight = max( dot( normal, dirVector ), 0.0 );",
+			"		for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {",
 
+			"			vec3 dirVector = directionalLights[ i ].direction;",
 
-		"			totalDiffuseLight += directionalLights[ i ].color * dirDiffuseWeight;",
+			"			float dirDiffuseWeight = max( dot( normal, dirVector ), 0.0 );",
 
-		"			if ( passID == 1 ) {",
 
-		"				float dirSpecularWeight = KS_Skin_Specular( normal, dirVector, viewerDirection, uRoughness, uSpecularBrightness );",
+			"			totalDiffuseLight += directionalLights[ i ].color * dirDiffuseWeight;",
 
-		"				totalSpecularLight += directionalLights[ i ].color * mSpecular.xyz * dirSpecularWeight;",
+			"			if ( passID == 1 ) {",
 
-		"			}",
+			"				float dirSpecularWeight = KS_Skin_Specular( normal, dirVector, viewerDirection, uRoughness, uSpecularBrightness );",
 
-		"		}",
+			"				totalSpecularLight += directionalLights[ i ].color * mSpecular.xyz * dirSpecularWeight;",
 
-		"	#endif",
+			"			}",
 
-		"	outgoingLight += diffuseColor.rgb * ( totalDiffuseLight + totalSpecularLight );",
+			"		}",
 
-		"	if ( passID == 0 ) {",
+			"	#endif",
 
-		"		outgoingLight = sqrt( outgoingLight );",
+			"	outgoingLight += diffuseColor.rgb * ( totalDiffuseLight + totalSpecularLight );",
 
-		"	} else if ( passID == 1 ) {",
+			"	if ( passID == 0 ) {",
 
-		//"#define VERSION1",
+			"		outgoingLight = sqrt( outgoingLight );",
 
-		"	#ifdef VERSION1",
+			"	} else if ( passID == 1 ) {",
 
-		"		vec3 nonblurColor = sqrt(outgoingLight );",
+			//"#define VERSION1",
 
-		"	#else",
+			"	#ifdef VERSION1",
 
-		"		vec3 nonblurColor = outgoingLight;",
+			"		vec3 nonblurColor = sqrt(outgoingLight );",
 
-		"	#endif",
+			"	#else",
 
-		"	vec3 blur1Color = texture2D( tBlur1, vUv ).xyz;",
-		"	vec3 blur2Color = texture2D( tBlur2, vUv ).xyz;",
-		"	vec3 blur3Color = texture2D( tBlur3, vUv ).xyz;",
-		"	vec3 blur4Color = texture2D( tBlur4, vUv ).xyz;",
+			"		vec3 nonblurColor = outgoingLight;",
 
+			"	#endif",
 
-		//"gl_FragColor = vec4( blur1Color, gl_FragColor.w );",
+			"	vec3 blur1Color = texture2D( tBlur1, vUv ).xyz;",
+			"	vec3 blur2Color = texture2D( tBlur2, vUv ).xyz;",
+			"	vec3 blur3Color = texture2D( tBlur3, vUv ).xyz;",
+			"	vec3 blur4Color = texture2D( tBlur4, vUv ).xyz;",
 
-		//"gl_FragColor = vec4( vec3( 0.22, 0.5, 0.7 ) * nonblurColor + vec3( 0.2, 0.5, 0.3 ) * blur1Color + vec3( 0.58, 0.0, 0.0 ) * blur2Color, gl_FragColor.w );",
 
-		//"gl_FragColor = vec4( vec3( 0.25, 0.6, 0.8 ) * nonblurColor + vec3( 0.15, 0.25, 0.2 ) * blur1Color + vec3( 0.15, 0.15, 0.0 ) * blur2Color + vec3( 0.45, 0.0, 0.0 ) * blur3Color, gl_FragColor.w );",
+			//"gl_FragColor = vec4( blur1Color, gl_FragColor.w );",
 
-		"	outgoingLight = vec3( vec3( 0.22,  0.437, 0.635 ) * nonblurColor + ",
-		"		vec3( 0.101, 0.355, 0.365 ) * blur1Color + ",
-		"		vec3( 0.119, 0.208, 0.0 )   * blur2Color + ",
-		"		vec3( 0.114, 0.0,   0.0 )   * blur3Color + ",
-		"		vec3( 0.444, 0.0,   0.0 )   * blur4Color );",
+			//"gl_FragColor = vec4( vec3( 0.22, 0.5, 0.7 ) * nonblurColor + vec3( 0.2, 0.5, 0.3 ) * blur1Color + vec3( 0.58, 0.0, 0.0 ) * blur2Color, gl_FragColor.w );",
 
-		"	outgoingLight *= sqrt( colDiffuse.xyz );",
+			//"gl_FragColor = vec4( vec3( 0.25, 0.6, 0.8 ) * nonblurColor + vec3( 0.15, 0.25, 0.2 ) * blur1Color + vec3( 0.15, 0.15, 0.0 ) * blur2Color + vec3( 0.45, 0.0, 0.0 ) * blur3Color, gl_FragColor.w );",
 
-		"	outgoingLight += ambientLightColor * diffuse * colDiffuse.xyz + totalSpecularLight;",
+			"	outgoingLight = vec3( vec3( 0.22,  0.437, 0.635 ) * nonblurColor + ",
+			"		vec3( 0.101, 0.355, 0.365 ) * blur1Color + ",
+			"		vec3( 0.119, 0.208, 0.0 )   * blur2Color + ",
+			"		vec3( 0.114, 0.0,   0.0 )   * blur3Color + ",
+			"		vec3( 0.444, 0.0,   0.0 )   * blur4Color );",
 
-		"		#ifndef VERSION1",
+			"	outgoingLight *= sqrt( colDiffuse.xyz );",
 
-		"			outgoingLight = sqrt( outgoingLight );",
+			"	outgoingLight += ambientLightColor * diffuse * colDiffuse.xyz + totalSpecularLight;",
 
-		"		#endif",
+			"		#ifndef VERSION1",
 
-		"	}",
+			"			outgoingLight = sqrt( outgoingLight );",
 
-		"	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",	// TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
+			"		#endif",
 
-		THREE.ShaderChunk[ "fog_fragment" ],
+			"	}",
 
-		"}"
+			"	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",	// TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
 
-	].join( "\n" )
+			THREE.ShaderChunk[ "fog_fragment" ],
 
-};
+			"}"
 
-/* ------------------------------------------------------------------------------------------
-// Beckmann distribution function
-//	- to be used in specular term of skin shader
-//	- render a screen-aligned quad to precompute a 512 x 512 texture
-//
-//		- from http://developer.nvidia.com/node/171
- ------------------------------------------------------------------------------------------ */
+		].join( "\n" )
 
-THREE.SkinShaderBeckmann = {
+	};
 
-	uniforms: {},
+	/* ------------------------------------------------------------------------------------------
+	// Beckmann distribution function
+	//	- to be used in specular term of skin shader
+	//	- render a screen-aligned quad to precompute a 512 x 512 texture
+	//
+	//		- from http://developer.nvidia.com/node/171
+	 ------------------------------------------------------------------------------------------ */
 
-	vertexShader: [
+	var SkinShaderBeckmann = {
 
-		"varying vec2 vUv;",
+		uniforms: {},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"varying vec2 vUv;",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" ),
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"varying vec2 vUv;",
+		].join( "\n" ),
 
-		"float PHBeckmann( float ndoth, float m ) {",
+		fragmentShader: [
 
-		"	float alpha = acos( ndoth );",
-		"	float ta = tan( alpha );",
+			"varying vec2 vUv;",
 
-		"	float val = 1.0 / ( m * m * pow( ndoth, 4.0 ) ) * exp( -( ta * ta ) / ( m * m ) );",
-		"	return val;",
+			"float PHBeckmann( float ndoth, float m ) {",
 
-		"}",
+			"	float alpha = acos( ndoth );",
+			"	float ta = tan( alpha );",
 
-		"float KSTextureCompute( vec2 tex ) {",
+			"	float val = 1.0 / ( m * m * pow( ndoth, 4.0 ) ) * exp( -( ta * ta ) / ( m * m ) );",
+			"	return val;",
 
-		// Scale the value to fit within [0,1]  invert upon lookup.
+			"}",
 
-		"	return 0.5 * pow( PHBeckmann( tex.x, tex.y ), 0.1 );",
+			"float KSTextureCompute( vec2 tex ) {",
 
-		"}",
+			// Scale the value to fit within [0,1]  invert upon lookup.
 
-		"void main() {",
+			"	return 0.5 * pow( PHBeckmann( tex.x, tex.y ), 0.1 );",
 
-		"	float x = KSTextureCompute( vUv );",
+			"}",
 
-		"	gl_FragColor = vec4( x, x, x, 1.0 );",
+			"void main() {",
 
-		"}"
+			"	float x = KSTextureCompute( vUv );",
 
-	].join( "\n" )
+			"	gl_FragColor = vec4( x, x, x, 1.0 );",
 
-};
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.SkinShaderAdvanced = SkinShaderAdvanced;
+	exports.SkinShaderBasic = SkinShaderBasic;
+	exports.SkinShaderBeckmann = SkinShaderBeckmann;
+
+}));

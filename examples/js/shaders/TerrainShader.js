@@ -1,320 +1,334 @@
 /**
- * @author alteredq / http://alteredqualia.com/
- *
+ * Generated from 'examples/jsm/shaders/TerrainShader.js'
  */
 
-THREE.TerrainShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	/* -------------------------------------------------------------------------
-	//	Dynamic terrain shader
-	//		- Blinn-Phong
-	//		- height + normal + diffuse1 + diffuse2 + specular + detail maps
-	//		- point, directional and hemisphere lights (use with "lights: true" material option)
-	//		- shadow maps receiving
-	 ------------------------------------------------------------------------- */
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 */
 
-	uniforms: THREE.UniformsUtils.merge( [
+	var TerrainShader = {
 
-		THREE.UniformsLib[ "fog" ],
-		THREE.UniformsLib[ "lights" ],
+		/* -------------------------------------------------------------------------
+		//	Dynamic terrain shader
+		//		- Blinn-Phong
+		//		- height + normal + diffuse1 + diffuse2 + specular + detail maps
+		//		- point, directional and hemisphere lights (use with "lights: true" material option)
+		//		- shadow maps receiving
+		 ------------------------------------------------------------------------- */
 
-		{
+		uniforms: THREE.UniformsUtils.merge( [
 
-			"enableDiffuse1": { value: 0 },
-			"enableDiffuse2": { value: 0 },
-			"enableSpecular": { value: 0 },
-			"enableReflection": { value: 0 },
+			THREE.UniformsLib[ "fog" ],
+			THREE.UniformsLib[ "lights" ],
 
-			"tDiffuse1": { value: null },
-			"tDiffuse2": { value: null },
-			"tDetail": { value: null },
-			"tNormal": { value: null },
-			"tSpecular": { value: null },
-			"tDisplacement": { value: null },
+			{
 
-			"uNormalScale": { value: 1.0 },
+				"enableDiffuse1": { value: 0 },
+				"enableDiffuse2": { value: 0 },
+				"enableSpecular": { value: 0 },
+				"enableReflection": { value: 0 },
 
-			"uDisplacementBias": { value: 0.0 },
-			"uDisplacementScale": { value: 1.0 },
+				"tDiffuse1": { value: null },
+				"tDiffuse2": { value: null },
+				"tDetail": { value: null },
+				"tNormal": { value: null },
+				"tSpecular": { value: null },
+				"tDisplacement": { value: null },
 
-			"diffuse": { value: new THREE.Color( 0xeeeeee ) },
-			"specular": { value: new THREE.Color( 0x111111 ) },
-			"shininess": { value: 30 },
-			"opacity": { value: 1 },
+				"uNormalScale": { value: 1.0 },
 
-			"uRepeatBase": { value: new THREE.Vector2( 1, 1 ) },
-			"uRepeatOverlay": { value: new THREE.Vector2( 1, 1 ) },
+				"uDisplacementBias": { value: 0.0 },
+				"uDisplacementScale": { value: 1.0 },
 
-			"uOffset": { value: new THREE.Vector2( 0, 0 ) }
+				"diffuse": { value: new THREE.Color( 0xeeeeee ) },
+				"specular": { value: new THREE.Color( 0x111111 ) },
+				"shininess": { value: 30 },
+				"opacity": { value: 1 },
 
-		}
+				"uRepeatBase": { value: new THREE.Vector2( 1, 1 ) },
+				"uRepeatOverlay": { value: new THREE.Vector2( 1, 1 ) },
 
-	] ),
+				"uOffset": { value: new THREE.Vector2( 0, 0 ) }
 
-	fragmentShader: [
+			}
 
-		"uniform vec3 diffuse;",
-		"uniform vec3 specular;",
-		"uniform float shininess;",
-		"uniform float opacity;",
+		] ),
 
-		"uniform bool enableDiffuse1;",
-		"uniform bool enableDiffuse2;",
-		"uniform bool enableSpecular;",
+		fragmentShader: [
 
-		"uniform sampler2D tDiffuse1;",
-		"uniform sampler2D tDiffuse2;",
-		"uniform sampler2D tDetail;",
-		"uniform sampler2D tNormal;",
-		"uniform sampler2D tSpecular;",
-		"uniform sampler2D tDisplacement;",
+			"uniform vec3 diffuse;",
+			"uniform vec3 specular;",
+			"uniform float shininess;",
+			"uniform float opacity;",
 
-		"uniform float uNormalScale;",
+			"uniform bool enableDiffuse1;",
+			"uniform bool enableDiffuse2;",
+			"uniform bool enableSpecular;",
 
-		"uniform vec2 uRepeatOverlay;",
-		"uniform vec2 uRepeatBase;",
+			"uniform sampler2D tDiffuse1;",
+			"uniform sampler2D tDiffuse2;",
+			"uniform sampler2D tDetail;",
+			"uniform sampler2D tNormal;",
+			"uniform sampler2D tSpecular;",
+			"uniform sampler2D tDisplacement;",
 
-		"uniform vec2 uOffset;",
+			"uniform float uNormalScale;",
 
-		"varying vec3 vTangent;",
-		"varying vec3 vBinormal;",
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+			"uniform vec2 uRepeatOverlay;",
+			"uniform vec2 uRepeatBase;",
 
-		"varying vec3 vViewPosition;",
+			"uniform vec2 uOffset;",
 
-		THREE.ShaderChunk[ "common" ],
-		THREE.ShaderChunk[ "bsdfs" ],
-		THREE.ShaderChunk[ "lights_pars_begin" ],
-		THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
-		THREE.ShaderChunk[ "fog_pars_fragment" ],
+			"varying vec3 vTangent;",
+			"varying vec3 vBinormal;",
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		"float calcLightAttenuation( float lightDistance, float cutoffDistance, float decayExponent ) {",
-		"		if ( decayExponent > 0.0 ) {",
-		"			return pow( saturate( - lightDistance / cutoffDistance + 1.0 ), decayExponent );",
-		"		}",
-		"		return 1.0;",
-		"	}",
+			"varying vec3 vViewPosition;",
 
-		"void main() {",
+			THREE.ShaderChunk[ "common" ],
+			THREE.ShaderChunk[ "bsdfs" ],
+			THREE.ShaderChunk[ "lights_pars_begin" ],
+			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+			THREE.ShaderChunk[ "fog_pars_fragment" ],
 
-		"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
-		"	vec4 diffuseColor = vec4( diffuse, opacity );",
+			"float calcLightAttenuation( float lightDistance, float cutoffDistance, float decayExponent ) {",
+			"		if ( decayExponent > 0.0 ) {",
+			"			return pow( saturate( - lightDistance / cutoffDistance + 1.0 ), decayExponent );",
+			"		}",
+			"		return 1.0;",
+			"	}",
 
-		"	vec3 specularTex = vec3( 1.0 );",
+			"void main() {",
 
-		"	vec2 uvOverlay = uRepeatOverlay * vUv + uOffset;",
-		"	vec2 uvBase = uRepeatBase * vUv;",
+			"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
+			"	vec4 diffuseColor = vec4( diffuse, opacity );",
 
-		"	vec3 normalTex = texture2D( tDetail, uvOverlay ).xyz * 2.0 - 1.0;",
-		"	normalTex.xy *= uNormalScale;",
-		"	normalTex = normalize( normalTex );",
+			"	vec3 specularTex = vec3( 1.0 );",
 
-		"	if( enableDiffuse1 && enableDiffuse2 ) {",
+			"	vec2 uvOverlay = uRepeatOverlay * vUv + uOffset;",
+			"	vec2 uvBase = uRepeatBase * vUv;",
 
-		"		vec4 colDiffuse1 = texture2D( tDiffuse1, uvOverlay );",
-		"		vec4 colDiffuse2 = texture2D( tDiffuse2, uvOverlay );",
+			"	vec3 normalTex = texture2D( tDetail, uvOverlay ).xyz * 2.0 - 1.0;",
+			"	normalTex.xy *= uNormalScale;",
+			"	normalTex = normalize( normalTex );",
 
-		"		colDiffuse1 = GammaToLinear( colDiffuse1, float( GAMMA_FACTOR ) );",
-		"		colDiffuse2 = GammaToLinear( colDiffuse2, float( GAMMA_FACTOR ) );",
+			"	if( enableDiffuse1 && enableDiffuse2 ) {",
 
-		"		diffuseColor *= mix ( colDiffuse1, colDiffuse2, 1.0 - texture2D( tDisplacement, uvBase ) );",
+			"		vec4 colDiffuse1 = texture2D( tDiffuse1, uvOverlay );",
+			"		vec4 colDiffuse2 = texture2D( tDiffuse2, uvOverlay );",
 
-		"	 } else if( enableDiffuse1 ) {",
+			"		colDiffuse1 = GammaToLinear( colDiffuse1, float( GAMMA_FACTOR ) );",
+			"		colDiffuse2 = GammaToLinear( colDiffuse2, float( GAMMA_FACTOR ) );",
 
-		"		diffuseColor *= texture2D( tDiffuse1, uvOverlay );",
+			"		diffuseColor *= mix ( colDiffuse1, colDiffuse2, 1.0 - texture2D( tDisplacement, uvBase ) );",
 
-		"	} else if( enableDiffuse2 ) {",
+			"	 } else if( enableDiffuse1 ) {",
 
-		"		diffuseColor *= texture2D( tDiffuse2, uvOverlay );",
+			"		diffuseColor *= texture2D( tDiffuse1, uvOverlay );",
 
-		"	}",
+			"	} else if( enableDiffuse2 ) {",
 
-		"	if( enableSpecular )",
-		"		specularTex = texture2D( tSpecular, uvOverlay ).xyz;",
+			"		diffuseColor *= texture2D( tDiffuse2, uvOverlay );",
 
-		"	mat3 tsb = mat3( vTangent, vBinormal, vNormal );",
-		"	vec3 finalNormal = tsb * normalTex;",
+			"	}",
 
-		"	vec3 normal = normalize( finalNormal );",
-		"	vec3 viewPosition = normalize( vViewPosition );",
+			"	if( enableSpecular )",
+			"		specularTex = texture2D( tSpecular, uvOverlay ).xyz;",
 
-		"	vec3 totalDiffuseLight = vec3( 0.0 );",
-		"	vec3 totalSpecularLight = vec3( 0.0 );",
+			"	mat3 tsb = mat3( vTangent, vBinormal, vNormal );",
+			"	vec3 finalNormal = tsb * normalTex;",
 
-		// point lights
+			"	vec3 normal = normalize( finalNormal );",
+			"	vec3 viewPosition = normalize( vViewPosition );",
 
-		"	#if NUM_POINT_LIGHTS > 0",
+			"	vec3 totalDiffuseLight = vec3( 0.0 );",
+			"	vec3 totalSpecularLight = vec3( 0.0 );",
 
-		"		for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {",
+			// point lights
 
-		"			vec3 lVector = pointLights[ i ].position + vViewPosition.xyz;",
+			"	#if NUM_POINT_LIGHTS > 0",
 
-		"			float attenuation = calcLightAttenuation( length( lVector ), pointLights[ i ].distance, pointLights[ i ].decay );",
+			"		for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {",
 
-		"			lVector = normalize( lVector );",
+			"			vec3 lVector = pointLights[ i ].position + vViewPosition.xyz;",
 
-		"			vec3 pointHalfVector = normalize( lVector + viewPosition );",
+			"			float attenuation = calcLightAttenuation( length( lVector ), pointLights[ i ].distance, pointLights[ i ].decay );",
 
-		"			float pointDotNormalHalf = max( dot( normal, pointHalfVector ), 0.0 );",
-		"			float pointDiffuseWeight = max( dot( normal, lVector ), 0.0 );",
+			"			lVector = normalize( lVector );",
 
-		"			float pointSpecularWeight = specularTex.r * max( pow( pointDotNormalHalf, shininess ), 0.0 );",
+			"			vec3 pointHalfVector = normalize( lVector + viewPosition );",
 
-		"			totalDiffuseLight += attenuation * pointLights[ i ].color * pointDiffuseWeight;",
-		"			totalSpecularLight += attenuation * pointLights[ i ].color * specular * pointSpecularWeight * pointDiffuseWeight;",
+			"			float pointDotNormalHalf = max( dot( normal, pointHalfVector ), 0.0 );",
+			"			float pointDiffuseWeight = max( dot( normal, lVector ), 0.0 );",
 
-		"		}",
+			"			float pointSpecularWeight = specularTex.r * max( pow( pointDotNormalHalf, shininess ), 0.0 );",
 
-		"	#endif",
+			"			totalDiffuseLight += attenuation * pointLights[ i ].color * pointDiffuseWeight;",
+			"			totalSpecularLight += attenuation * pointLights[ i ].color * specular * pointSpecularWeight * pointDiffuseWeight;",
 
-		// directional lights
+			"		}",
 
-		"	#if NUM_DIR_LIGHTS > 0",
+			"	#endif",
 
-		"		vec3 dirDiffuse = vec3( 0.0 );",
-		"		vec3 dirSpecular = vec3( 0.0 );",
+			// directional lights
 
-		"		for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {",
+			"	#if NUM_DIR_LIGHTS > 0",
 
-		"			vec3 dirVector = directionalLights[ i ].direction;",
-		"			vec3 dirHalfVector = normalize( dirVector + viewPosition );",
+			"		vec3 dirDiffuse = vec3( 0.0 );",
+			"		vec3 dirSpecular = vec3( 0.0 );",
 
-		"			float dirDotNormalHalf = max( dot( normal, dirHalfVector ), 0.0 );",
-		"			float dirDiffuseWeight = max( dot( normal, dirVector ), 0.0 );",
+			"		for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {",
 
-		"			float dirSpecularWeight = specularTex.r * max( pow( dirDotNormalHalf, shininess ), 0.0 );",
+			"			vec3 dirVector = directionalLights[ i ].direction;",
+			"			vec3 dirHalfVector = normalize( dirVector + viewPosition );",
 
-		"			totalDiffuseLight += directionalLights[ i ].color * dirDiffuseWeight;",
-		"			totalSpecularLight += directionalLights[ i ].color * specular * dirSpecularWeight * dirDiffuseWeight;",
+			"			float dirDotNormalHalf = max( dot( normal, dirHalfVector ), 0.0 );",
+			"			float dirDiffuseWeight = max( dot( normal, dirVector ), 0.0 );",
 
-		"		}",
+			"			float dirSpecularWeight = specularTex.r * max( pow( dirDotNormalHalf, shininess ), 0.0 );",
 
-		"	#endif",
+			"			totalDiffuseLight += directionalLights[ i ].color * dirDiffuseWeight;",
+			"			totalSpecularLight += directionalLights[ i ].color * specular * dirSpecularWeight * dirDiffuseWeight;",
 
-		// hemisphere lights
+			"		}",
 
-		"	#if NUM_HEMI_LIGHTS > 0",
+			"	#endif",
 
-		"		vec3 hemiDiffuse  = vec3( 0.0 );",
-		"		vec3 hemiSpecular = vec3( 0.0 );",
+			// hemisphere lights
 
-		"		for( int i = 0; i < NUM_HEMI_LIGHTS; i ++ ) {",
+			"	#if NUM_HEMI_LIGHTS > 0",
 
-		"			vec3 lVector = hemisphereLightDirection[ i ];",
+			"		vec3 hemiDiffuse  = vec3( 0.0 );",
+			"		vec3 hemiSpecular = vec3( 0.0 );",
 
-		// diffuse
+			"		for( int i = 0; i < NUM_HEMI_LIGHTS; i ++ ) {",
 
-		"			float dotProduct = dot( normal, lVector );",
-		"			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
+			"			vec3 lVector = hemisphereLightDirection[ i ];",
 
-		"			totalDiffuseLight += mix( hemisphereLights[ i ].groundColor, hemisphereLights[ i ].skyColor, hemiDiffuseWeight );",
+			// diffuse
 
-		// specular (sky light)
+			"			float dotProduct = dot( normal, lVector );",
+			"			float hemiDiffuseWeight = 0.5 * dotProduct + 0.5;",
 
-		"			float hemiSpecularWeight = 0.0;",
+			"			totalDiffuseLight += mix( hemisphereLights[ i ].groundColor, hemisphereLights[ i ].skyColor, hemiDiffuseWeight );",
 
-		"			vec3 hemiHalfVectorSky = normalize( lVector + viewPosition );",
-		"			float hemiDotNormalHalfSky = 0.5 * dot( normal, hemiHalfVectorSky ) + 0.5;",
-		"			hemiSpecularWeight += specularTex.r * max( pow( hemiDotNormalHalfSky, shininess ), 0.0 );",
+			// specular (sky light)
 
-		// specular (ground light)
+			"			float hemiSpecularWeight = 0.0;",
 
-		"			vec3 lVectorGround = -lVector;",
+			"			vec3 hemiHalfVectorSky = normalize( lVector + viewPosition );",
+			"			float hemiDotNormalHalfSky = 0.5 * dot( normal, hemiHalfVectorSky ) + 0.5;",
+			"			hemiSpecularWeight += specularTex.r * max( pow( hemiDotNormalHalfSky, shininess ), 0.0 );",
 
-		"			vec3 hemiHalfVectorGround = normalize( lVectorGround + viewPosition );",
-		"			float hemiDotNormalHalfGround = 0.5 * dot( normal, hemiHalfVectorGround ) + 0.5;",
-		"			hemiSpecularWeight += specularTex.r * max( pow( hemiDotNormalHalfGround, shininess ), 0.0 );",
+			// specular (ground light)
 
-		"			totalSpecularLight += specular * mix( hemisphereLights[ i ].groundColor, hemisphereLights[ i ].skyColor, hemiDiffuseWeight ) * hemiSpecularWeight * hemiDiffuseWeight;",
+			"			vec3 lVectorGround = -lVector;",
 
-		"		}",
+			"			vec3 hemiHalfVectorGround = normalize( lVectorGround + viewPosition );",
+			"			float hemiDotNormalHalfGround = 0.5 * dot( normal, hemiHalfVectorGround ) + 0.5;",
+			"			hemiSpecularWeight += specularTex.r * max( pow( hemiDotNormalHalfGround, shininess ), 0.0 );",
 
-		"	#endif",
+			"			totalSpecularLight += specular * mix( hemisphereLights[ i ].groundColor, hemisphereLights[ i ].skyColor, hemiDiffuseWeight ) * hemiSpecularWeight * hemiDiffuseWeight;",
 
-		"	outgoingLight += diffuseColor.xyz * ( totalDiffuseLight + ambientLightColor + totalSpecularLight );",
+			"		}",
 
-		"	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",	// TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
+			"	#endif",
 
-		THREE.ShaderChunk[ "fog_fragment" ],
+			"	outgoingLight += diffuseColor.xyz * ( totalDiffuseLight + ambientLightColor + totalSpecularLight );",
 
-		"}"
+			"	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",	// TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
 
-	].join( "\n" ),
+			THREE.ShaderChunk[ "fog_fragment" ],
 
-	vertexShader: [
+			"}"
 
-		"attribute vec4 tangent;",
+		].join( "\n" ),
 
-		"uniform vec2 uRepeatBase;",
+		vertexShader: [
 
-		"uniform sampler2D tNormal;",
+			"attribute vec4 tangent;",
 
-		"#ifdef VERTEX_TEXTURES",
+			"uniform vec2 uRepeatBase;",
 
-		"	uniform sampler2D tDisplacement;",
-		"	uniform float uDisplacementScale;",
-		"	uniform float uDisplacementBias;",
+			"uniform sampler2D tNormal;",
 
-		"#endif",
+			"#ifdef VERTEX_TEXTURES",
 
-		"varying vec3 vTangent;",
-		"varying vec3 vBinormal;",
-		"varying vec3 vNormal;",
-		"varying vec2 vUv;",
+			"	uniform sampler2D tDisplacement;",
+			"	uniform float uDisplacementScale;",
+			"	uniform float uDisplacementBias;",
 
-		"varying vec3 vViewPosition;",
+			"#endif",
 
-		THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
-		THREE.ShaderChunk[ "fog_pars_vertex" ],
+			"varying vec3 vTangent;",
+			"varying vec3 vBinormal;",
+			"varying vec3 vNormal;",
+			"varying vec2 vUv;",
 
-		"void main() {",
+			"varying vec3 vViewPosition;",
 
-		"	vNormal = normalize( normalMatrix * normal );",
+			THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+			THREE.ShaderChunk[ "fog_pars_vertex" ],
 
-		// tangent and binormal vectors
+			"void main() {",
 
-		"	vTangent = normalize( normalMatrix * tangent.xyz );",
+			"	vNormal = normalize( normalMatrix * normal );",
 
-		"	vBinormal = cross( vNormal, vTangent ) * tangent.w;",
-		"	vBinormal = normalize( vBinormal );",
+			// tangent and binormal vectors
 
-		// texture coordinates
+			"	vTangent = normalize( normalMatrix * tangent.xyz );",
 
-		"	vUv = uv;",
+			"	vBinormal = cross( vNormal, vTangent ) * tangent.w;",
+			"	vBinormal = normalize( vBinormal );",
 
-		"	vec2 uvBase = uv * uRepeatBase;",
+			// texture coordinates
 
-		// displacement mapping
+			"	vUv = uv;",
 
-		"	#ifdef VERTEX_TEXTURES",
+			"	vec2 uvBase = uv * uRepeatBase;",
 
-		"		vec3 dv = texture2D( tDisplacement, uvBase ).xyz;",
-		"		float df = uDisplacementScale * dv.x + uDisplacementBias;",
-		"		vec3 displacedPosition = normal * df + position;",
+			// displacement mapping
 
-		"		vec4 worldPosition = modelMatrix * vec4( displacedPosition, 1.0 );",
-		"		vec4 mvPosition = modelViewMatrix * vec4( displacedPosition, 1.0 );",
+			"	#ifdef VERTEX_TEXTURES",
 
-		"	#else",
+			"		vec3 dv = texture2D( tDisplacement, uvBase ).xyz;",
+			"		float df = uDisplacementScale * dv.x + uDisplacementBias;",
+			"		vec3 displacedPosition = normal * df + position;",
 
-		"		vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
-		"		vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+			"		vec4 worldPosition = modelMatrix * vec4( displacedPosition, 1.0 );",
+			"		vec4 mvPosition = modelViewMatrix * vec4( displacedPosition, 1.0 );",
 
-		"	#endif",
+			"	#else",
 
-		"	gl_Position = projectionMatrix * mvPosition;",
+			"		vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+			"		vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
 
-		"	vViewPosition = -mvPosition.xyz;",
+			"	#endif",
 
-		"	vec3 normalTex = texture2D( tNormal, uvBase ).xyz * 2.0 - 1.0;",
-		"	vNormal = normalMatrix * normalTex;",
+			"	gl_Position = projectionMatrix * mvPosition;",
 
-		THREE.ShaderChunk[ "shadowmap_vertex" ],
-		THREE.ShaderChunk[ "fog_vertex" ],
+			"	vViewPosition = -mvPosition.xyz;",
 
-		"}"
+			"	vec3 normalTex = texture2D( tNormal, uvBase ).xyz * 2.0 - 1.0;",
+			"	vNormal = normalMatrix * normalTex;",
 
-	].join( "\n" )
+			THREE.ShaderChunk[ "shadowmap_vertex" ],
+			THREE.ShaderChunk[ "fog_vertex" ],
 
-};
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.TerrainShader = TerrainShader;
+
+}));

@@ -1,64 +1,78 @@
 /**
- * @author bhouston / http://clara.io/
- *
- * Luminosity
- * http://en.wikipedia.org/wiki/Luminosity
+ * Generated from 'examples/jsm/shaders/LuminosityHighPassShader.js'
  */
 
-THREE.LuminosityHighPassShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	shaderID: "luminosityHighPass",
+	/**
+	 * @author bhouston / http://clara.io/
+	 *
+	 * Luminosity
+	 * http://en.wikipedia.org/wiki/Luminosity
+	 */
 
-	uniforms: {
+	var LuminosityHighPassShader = {
 
-		"tDiffuse": { value: null },
-		"luminosityThreshold": { value: 1.0 },
-		"smoothWidth": { value: 1.0 },
-		"defaultColor": { value: new THREE.Color( 0x000000 ) },
-		"defaultOpacity": { value: 0.0 }
+		shaderID: "luminosityHighPass",
 
-	},
+		uniforms: {
 
-	vertexShader: [
+			"tDiffuse": { value: null },
+			"luminosityThreshold": { value: 1.0 },
+			"smoothWidth": { value: 1.0 },
+			"defaultColor": { value: new THREE.Color( 0x000000 ) },
+			"defaultOpacity": { value: 0.0 }
 
-		"varying vec2 vUv;",
+		},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
+			"varying vec2 vUv;",
 
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"void main() {",
 
-		"}"
+			"	vUv = uv;",
 
-	].join( "\n" ),
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"uniform sampler2D tDiffuse;",
-		"uniform vec3 defaultColor;",
-		"uniform float defaultOpacity;",
-		"uniform float luminosityThreshold;",
-		"uniform float smoothWidth;",
+		].join( "\n" ),
 
-		"varying vec2 vUv;",
+		fragmentShader: [
 
-		"void main() {",
+			"uniform sampler2D tDiffuse;",
+			"uniform vec3 defaultColor;",
+			"uniform float defaultOpacity;",
+			"uniform float luminosityThreshold;",
+			"uniform float smoothWidth;",
 
-		"	vec4 texel = texture2D( tDiffuse, vUv );",
+			"varying vec2 vUv;",
 
-		"	vec3 luma = vec3( 0.299, 0.587, 0.114 );",
+			"void main() {",
 
-		"	float v = dot( texel.xyz, luma );",
+			"	vec4 texel = texture2D( tDiffuse, vUv );",
 
-		"	vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );",
+			"	vec3 luma = vec3( 0.299, 0.587, 0.114 );",
 
-		"	float alpha = smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v );",
+			"	float v = dot( texel.xyz, luma );",
 
-		"	gl_FragColor = mix( outputColor, texel, alpha );",
+			"	vec4 outputColor = vec4( defaultColor.rgb, defaultOpacity );",
 
-		"}"
+			"	float alpha = smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v );",
 
-	].join( "\n" )
+			"	gl_FragColor = mix( outputColor, texel, alpha );",
 
-};
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.LuminosityHighPassShader = LuminosityHighPassShader;
+
+}));

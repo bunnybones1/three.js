@@ -1,45 +1,61 @@
 /**
- * @author WestLangley / http://github.com/WestLangley
- *
- * Gamma Correction Shader
- * http://en.wikipedia.org/wiki/gamma_correction
+ * Generated from 'examples/jsm/shaders/GammaCorrectionShader.js'
  */
 
-THREE.GammaCorrectionShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author WestLangley / http://github.com/WestLangley
+	 *
+	 * Gamma Correction Shader
+	 * http://en.wikipedia.org/wiki/gamma_correction
+	 */
 
-		"tDiffuse": { value: null }
 
-	},
 
-	vertexShader: [
+	var GammaCorrectionShader = {
 
-		"varying vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"tDiffuse": { value: null }
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		},
 
-		"}"
+		vertexShader: [
 
-	].join( "\n" ),
+			"varying vec2 vUv;",
 
-	fragmentShader: [
+			"void main() {",
 
-		"uniform sampler2D tDiffuse;",
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"varying vec2 vUv;",
+			"}"
 
-		"void main() {",
+		].join( "\n" ),
 
-		"	vec4 tex = texture2D( tDiffuse, vec2( vUv.x, vUv.y ) );",
+		fragmentShader: [
 
-		"	gl_FragColor = LinearToGamma( tex, float( GAMMA_FACTOR ) );",
+			"uniform sampler2D tDiffuse;",
 
-		"}"
+			"varying vec2 vUv;",
 
-	].join( "\n" )
+			"void main() {",
 
-};
+			"	vec4 tex = texture2D( tDiffuse, vec2( vUv.x, vUv.y ) );",
+
+			"	gl_FragColor = LinearToGamma( tex, float( GAMMA_FACTOR ) );",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.GammaCorrectionShader = GammaCorrectionShader;
+
+}));

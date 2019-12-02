@@ -1,186 +1,196 @@
 /**
- * @author Prashant Sharma / spidersharma03
- * @author Ben Houston / bhouston, https://clara.io
- *
- * To avoid cube map seams, I create an extra pixel around each face. This way when the cube map is
- * sampled by an application later(with a little care by sampling the centre of the texel), the extra 1 border
- *	of pixels makes sure that there is no seams artifacts present. This works perfectly for cubeUV format as
- *	well where the 6 faces can be arranged in any manner whatsoever.
- * Code in the beginning of fragment shader's main function does this job for a given resolution.
- *	Run Scene_PMREM_Test.html in the examples directory to see the sampling from the cube lods generated
- *	by this class.
+ * Generated from 'examples/jsm/pmrem/PMREMGenerator.js'
  */
 
-THREE.PMREMGenerator = ( function () {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	var shader = getShader();
-	var camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.0, 1000 );
-	var scene = new THREE.Scene();
-	var planeMesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2, 0 ), shader );
-	planeMesh.material.side = THREE.DoubleSide;
-	scene.add( planeMesh );
-	scene.add( camera );
+	/**
+	 * @author Prashant Sharma / spidersharma03
+	 * @author Ben Houston / bhouston, https://clara.io
+	 *
+	 * To avoid cube map seams, I create an extra pixel around each face. This way when the cube map is
+	 * sampled by an application later(with a little care by sampling the centre of the texel), the extra 1 border
+	 *	of pixels makes sure that there is no seams artifacts present. This works perfectly for cubeUV format as
+	 *	well where the 6 faces can be arranged in any manner whatsoever.
+	 * Code in the beginning of fragment shader's main function does this job for a given resolution.
+	 *	Run Scene_PMREM_Test.html in the examples directory to see the sampling from the cube lods generated
+	 *	by this class.
+	 */
 
-	var PMREMGenerator = function ( sourceTexture, samplesPerLevel, resolution ) {
+	var PMREMGenerator = ( function () {
 
-		this.sourceTexture = sourceTexture;
-		this.resolution = ( resolution !== undefined ) ? resolution : 256; // NODE: 256 is currently hard coded in the glsl code for performance reasons
-		this.samplesPerLevel = ( samplesPerLevel !== undefined ) ? samplesPerLevel : 32;
+		var shader = getShader();
+		var camera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0.0, 1000 );
+		var scene = new THREE.Scene();
+		var planeMesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2, 0 ), shader );
+		planeMesh.material.side = THREE.DoubleSide;
+		scene.add( planeMesh );
+		scene.add( camera );
 
-		var monotonicEncoding = ( this.sourceTexture.encoding === THREE.LinearEncoding ) ||
-			( this.sourceTexture.encoding === THREE.GammaEncoding ) || ( this.sourceTexture.encoding === THREE.sRGBEncoding );
+		var PMREMGenerator = function ( sourceTexture, samplesPerLevel, resolution ) {
 
-		this.sourceTexture.minFilter = ( monotonicEncoding ) ? THREE.LinearFilter : THREE.NearestFilter;
-		this.sourceTexture.magFilter = ( monotonicEncoding ) ? THREE.LinearFilter : THREE.NearestFilter;
-		this.sourceTexture.generateMipmaps = this.sourceTexture.generateMipmaps && monotonicEncoding;
+			this.sourceTexture = sourceTexture;
+			this.resolution = ( resolution !== undefined ) ? resolution : 256; // NODE: 256 is currently hard coded in the glsl code for performance reasons
+			this.samplesPerLevel = ( samplesPerLevel !== undefined ) ? samplesPerLevel : 32;
 
-		this.cubeLods = [];
+			var monotonicEncoding = ( this.sourceTexture.encoding === THREE.LinearEncoding ) ||
+				( this.sourceTexture.encoding === THREE.GammaEncoding ) || ( this.sourceTexture.encoding === THREE.sRGBEncoding );
 
-		var size = this.resolution;
-		var params = {
-			format: this.sourceTexture.format,
-			magFilter: this.sourceTexture.magFilter,
-			minFilter: this.sourceTexture.minFilter,
-			type: this.sourceTexture.type,
-			generateMipmaps: this.sourceTexture.generateMipmaps,
-			anisotropy: this.sourceTexture.anisotropy,
-			encoding: this.sourceTexture.encoding
-		};
+			this.sourceTexture.minFilter = ( monotonicEncoding ) ? THREE.LinearFilter : THREE.NearestFilter;
+			this.sourceTexture.magFilter = ( monotonicEncoding ) ? THREE.LinearFilter : THREE.NearestFilter;
+			this.sourceTexture.generateMipmaps = this.sourceTexture.generateMipmaps && monotonicEncoding;
 
-		// how many LODs fit in the given CubeUV Texture.
-		this.numLods = Math.log( size ) / Math.log( 2 ) - 2; // IE11 doesn't support Math.log2
+			this.cubeLods = [];
 
-		for ( var i = 0; i < this.numLods; i ++ ) {
+			var size = this.resolution;
+			var params = {
+				format: this.sourceTexture.format,
+				magFilter: this.sourceTexture.magFilter,
+				minFilter: this.sourceTexture.minFilter,
+				type: this.sourceTexture.type,
+				generateMipmaps: this.sourceTexture.generateMipmaps,
+				anisotropy: this.sourceTexture.anisotropy,
+				encoding: this.sourceTexture.encoding
+			};
 
-			var renderTarget = new THREE.WebGLRenderTargetCube( size, size, params );
-			renderTarget.texture.name = "PMREMGenerator.cube" + i;
-			this.cubeLods.push( renderTarget );
-			size = Math.max( 16, size / 2 );
-
-		}
-
-	};
-
-	PMREMGenerator.prototype = {
-
-		constructor: PMREMGenerator,
-
-		/*
-		 * Prashant Sharma / spidersharma03: More thought and work is needed here.
-		 * Right now it's a kind of a hack to use the previously convolved map to convolve the current one.
-		 * I tried to use the original map to convolve all the lods, but for many textures(specially the high frequency)
-		 * even a high number of samples(1024) dosen't lead to satisfactory results.
-		 * By using the previous convolved maps, a lower number of samples are generally sufficient(right now 32, which
-		 * gives okay results unless we see the reflection very carefully, or zoom in too much), however the math
-		 * goes wrong as the distribution function tries to sample a larger area than what it should be. So I simply scaled
-		 * the roughness by 0.9(totally empirical) to try to visually match the original result.
-		 * The condition "if(i <5)" is also an attemt to make the result match the original result.
-		 * This method requires the most amount of thinking I guess. Here is a paper which we could try to implement in future::
-		 * https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
-		 */
-		update: function ( renderer ) {
-
-			// Texture should only be flipped for CubeTexture, not for
-			// a Texture created via THREE.WebGLRenderTargetCube.
-			var tFlip = ( this.sourceTexture.isCubeTexture ) ? - 1 : 1;
-
-			shader.defines[ 'SAMPLES_PER_LEVEL' ] = this.samplesPerLevel;
-			shader.uniforms[ 'faceIndex' ].value = 0;
-			shader.uniforms[ 'envMap' ].value = this.sourceTexture;
-			shader.envMap = this.sourceTexture;
-			shader.needsUpdate = true;
-
-			var gammaInput = renderer.gammaInput;
-			var gammaOutput = renderer.gammaOutput;
-			var toneMapping = renderer.toneMapping;
-			var toneMappingExposure = renderer.toneMappingExposure;
-			var currentRenderTarget = renderer.getRenderTarget();
-
-			renderer.toneMapping = THREE.LinearToneMapping;
-			renderer.toneMappingExposure = 1.0;
-			renderer.gammaInput = false;
-			renderer.gammaOutput = false;
+			// how many LODs fit in the given CubeUV Texture.
+			this.numLods = Math.log( size ) / Math.log( 2 ) - 2; // IE11 doesn't support Math.log2
 
 			for ( var i = 0; i < this.numLods; i ++ ) {
 
-				var r = i / ( this.numLods - 1 );
-				shader.uniforms[ 'roughness' ].value = r * 0.9; // see comment above, pragmatic choice
-				// Only apply the tFlip for the first LOD
-				shader.uniforms[ 'tFlip' ].value = ( i == 0 ) ? tFlip : 1;
-				var size = this.cubeLods[ i ].width;
-				shader.uniforms[ 'mapSize' ].value = size;
-				this.renderToCubeMapTarget( renderer, this.cubeLods[ i ] );
-
-				if ( i < 5 ) shader.uniforms[ 'envMap' ].value = this.cubeLods[ i ].texture;
+				var renderTarget = new THREE.WebGLRenderTargetCube( size, size, params );
+				renderTarget.texture.name = "PMREMGenerator.cube" + i;
+				this.cubeLods.push( renderTarget );
+				size = Math.max( 16, size / 2 );
 
 			}
 
-			renderer.setRenderTarget( currentRenderTarget );
-			renderer.toneMapping = toneMapping;
-			renderer.toneMappingExposure = toneMappingExposure;
-			renderer.gammaInput = gammaInput;
-			renderer.gammaOutput = gammaOutput;
+		};
 
-		},
+		PMREMGenerator.prototype = {
 
-		renderToCubeMapTarget: function ( renderer, renderTarget ) {
+			constructor: PMREMGenerator,
 
-			for ( var i = 0; i < 6; i ++ ) {
+			/*
+			 * Prashant Sharma / spidersharma03: More thought and work is needed here.
+			 * Right now it's a kind of a hack to use the previously convolved map to convolve the current one.
+			 * I tried to use the original map to convolve all the lods, but for many textures(specially the high frequency)
+			 * even a high number of samples(1024) dosen't lead to satisfactory results.
+			 * By using the previous convolved maps, a lower number of samples are generally sufficient(right now 32, which
+			 * gives okay results unless we see the reflection very carefully, or zoom in too much), however the math
+			 * goes wrong as the distribution function tries to sample a larger area than what it should be. So I simply scaled
+			 * the roughness by 0.9(totally empirical) to try to visually match the original result.
+			 * The condition "if(i <5)" is also an attemt to make the result match the original result.
+			 * This method requires the most amount of thinking I guess. Here is a paper which we could try to implement in future::
+			 * https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch20.html
+			 */
+			update: function ( renderer ) {
 
-				this.renderToCubeMapTargetFace( renderer, renderTarget, i );
+				// Texture should only be flipped for CubeTexture, not for
+				// a Texture created via WebGLRenderTargetCube.
+				var tFlip = ( this.sourceTexture.isCubeTexture ) ? - 1 : 1;
 
-			}
+				shader.defines[ 'SAMPLES_PER_LEVEL' ] = this.samplesPerLevel;
+				shader.uniforms[ 'faceIndex' ].value = 0;
+				shader.uniforms[ 'envMap' ].value = this.sourceTexture;
+				shader.envMap = this.sourceTexture;
+				shader.needsUpdate = true;
 
-		},
+				var gammaInput = renderer.gammaInput;
+				var gammaOutput = renderer.gammaOutput;
+				var toneMapping = renderer.toneMapping;
+				var toneMappingExposure = renderer.toneMappingExposure;
+				var currentRenderTarget = renderer.getRenderTarget();
 
-		renderToCubeMapTargetFace: function ( renderer, renderTarget, faceIndex ) {
+				renderer.toneMapping = THREE.LinearToneMapping;
+				renderer.toneMappingExposure = 1.0;
+				renderer.gammaInput = false;
+				renderer.gammaOutput = false;
 
-			shader.uniforms[ 'faceIndex' ].value = faceIndex;
-			renderer.setRenderTarget( renderTarget, faceIndex );
-			renderer.clear();
-			renderer.render( scene, camera );
+				for ( var i = 0; i < this.numLods; i ++ ) {
 
-		},
+					var r = i / ( this.numLods - 1 );
+					shader.uniforms[ 'roughness' ].value = r * 0.9; // see comment above, pragmatic choice
+					// Only apply the tFlip for the first LOD
+					shader.uniforms[ 'tFlip' ].value = ( i == 0 ) ? tFlip : 1;
+					var size = this.cubeLods[ i ].width;
+					shader.uniforms[ 'mapSize' ].value = size;
+					this.renderToCubeMapTarget( renderer, this.cubeLods[ i ] );
 
-		dispose: function () {
+					if ( i < 5 ) shader.uniforms[ 'envMap' ].value = this.cubeLods[ i ].texture;
 
-			for ( var i = 0, l = this.cubeLods.length; i < l; i ++ ) {
+				}
 
-				this.cubeLods[ i ].dispose();
+				renderer.setRenderTarget( currentRenderTarget );
+				renderer.toneMapping = toneMapping;
+				renderer.toneMappingExposure = toneMappingExposure;
+				renderer.gammaInput = gammaInput;
+				renderer.gammaOutput = gammaOutput;
 
-			}
-
-			shader.dispose();
-
-		},
-
-	};
-
-	function getShader() {
-
-		var shaderMaterial = new THREE.ShaderMaterial( {
-
-			defines: {
-				"SAMPLES_PER_LEVEL": 20,
 			},
 
-			uniforms: {
-				"faceIndex": { value: 0 },
-				"roughness": { value: 0.5 },
-				"mapSize": { value: 0.5 },
-				"envMap": { value: null },
-				"tFlip": { value: - 1 },
+			renderToCubeMapTarget: function ( renderer, renderTarget ) {
+
+				for ( var i = 0; i < 6; i ++ ) {
+
+					this.renderToCubeMapTargetFace( renderer, renderTarget, i );
+
+				}
+
 			},
 
-			vertexShader:
-				"varying vec2 vUv;\n\
+			renderToCubeMapTargetFace: function ( renderer, renderTarget, faceIndex ) {
+
+				shader.uniforms[ 'faceIndex' ].value = faceIndex;
+				renderer.setRenderTarget( renderTarget, faceIndex );
+				renderer.clear();
+				renderer.render( scene, camera );
+
+			},
+
+			dispose: function () {
+
+				for ( var i = 0, l = this.cubeLods.length; i < l; i ++ ) {
+
+					this.cubeLods[ i ].dispose();
+
+				}
+
+				shader.dispose();
+
+			},
+
+		};
+
+		function getShader() {
+
+			var shaderMaterial = new THREE.ShaderMaterial( {
+
+				defines: {
+					"SAMPLES_PER_LEVEL": 20,
+				},
+
+				uniforms: {
+					"faceIndex": { value: 0 },
+					"roughness": { value: 0.5 },
+					"mapSize": { value: 0.5 },
+					"envMap": { value: null },
+					"tFlip": { value: - 1 },
+				},
+
+				vertexShader:
+					"varying vec2 vUv;\n\
 				void main() {\n\
 					vUv = uv;\n\
 					gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n\
 				}",
 
-			fragmentShader:
-				"#include <common>\n\
+				fragmentShader:
+					"#include <common>\n\
 				varying vec2 vUv;\n\
 				uniform int faceIndex;\n\
 				uniform float roughness;\n\
@@ -278,16 +288,20 @@ THREE.PMREMGenerator = ( function () {
 					gl_FragColor = linearToOutputTexel( vec4( rgbColor, 1.0 ) );\n\
 				}",
 
-			blending: THREE.NoBlending
+				blending: THREE.NoBlending
 
-		} );
+			} );
 
-		shaderMaterial.type = 'PMREMGenerator';
+			shaderMaterial.type = 'PMREMGenerator';
 
-		return shaderMaterial;
+			return shaderMaterial;
 
-	}
+		}
 
-	return PMREMGenerator;
+		return PMREMGenerator;
 
-} )();
+	} )();
+
+	exports.PMREMGenerator = PMREMGenerator;
+
+}));

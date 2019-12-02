@@ -1,60 +1,76 @@
 /**
- * @author felixturner / http://airtight.cc/
- *
- * Kaleidoscope Shader
- * Radial reflection around center point
- * Ported from: http://pixelshaders.com/editor/
- * by Toby Schachman / http://tobyschachman.com/
- *
- * sides: number of reflections
- * angle: initial angle in radians
+ * Generated from 'examples/jsm/shaders/KaleidoShader.js'
  */
 
-THREE.KaleidoShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author felixturner / http://airtight.cc/
+	 *
+	 * Kaleidoscope Shader
+	 * Radial reflection around center point
+	 * Ported from: http://pixelshaders.com/editor/
+	 * by Toby Schachman / http://tobyschachman.com/
+	 *
+	 * sides: number of reflections
+	 * angle: initial angle in radians
+	 */
 
-		"tDiffuse": { value: null },
-		"sides": { value: 6.0 },
-		"angle": { value: 0.0 }
 
-	},
 
-	vertexShader: [
+	var KaleidoShader = {
 
-		"varying vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"tDiffuse": { value: null },
+			"sides": { value: 6.0 },
+			"angle": { value: 0.0 }
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		},
 
-		"}"
+		vertexShader: [
 
-	].join( "\n" ),
+			"varying vec2 vUv;",
 
-	fragmentShader: [
+			"void main() {",
 
-		"uniform sampler2D tDiffuse;",
-		"uniform float sides;",
-		"uniform float angle;",
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"varying vec2 vUv;",
+			"}"
 
-		"void main() {",
+		].join( "\n" ),
 
-		"	vec2 p = vUv - 0.5;",
-		"	float r = length(p);",
-		"	float a = atan(p.y, p.x) + angle;",
-		"	float tau = 2. * 3.1416 ;",
-		"	a = mod(a, tau/sides);",
-		"	a = abs(a - tau/sides/2.) ;",
-		"	p = r * vec2(cos(a), sin(a));",
-		"	vec4 color = texture2D(tDiffuse, p + 0.5);",
-		"	gl_FragColor = color;",
+		fragmentShader: [
 
-		"}"
+			"uniform sampler2D tDiffuse;",
+			"uniform float sides;",
+			"uniform float angle;",
 
-	].join( "\n" )
+			"varying vec2 vUv;",
 
-};
+			"void main() {",
+
+			"	vec2 p = vUv - 0.5;",
+			"	float r = length(p);",
+			"	float a = atan(p.y, p.x) + angle;",
+			"	float tau = 2. * 3.1416 ;",
+			"	a = mod(a, tau/sides);",
+			"	a = abs(a - tau/sides/2.) ;",
+			"	p = r * vec2(cos(a), sin(a));",
+			"	vec4 color = texture2D(tDiffuse, p + 0.5);",
+			"	gl_FragColor = color;",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.KaleidoShader = KaleidoShader;
+
+}));

@@ -1,67 +1,81 @@
 /**
- * @author mrdoob / http://mrdoob.com/
+ * Generated from 'examples/jsm/geometries/BoxLineGeometry.js'
  */
 
-THREE.BoxLineGeometry = function ( width, height, depth, widthSegments, heightSegments, depthSegments ) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	THREE.BufferGeometry.call( this );
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
 
-	width = width || 1;
-	height = height || 1;
-	depth = depth || 1;
+	var BoxLineGeometry = function ( width, height, depth, widthSegments, heightSegments, depthSegments ) {
 
-	widthSegments = Math.floor( widthSegments ) || 1;
-	heightSegments = Math.floor( heightSegments ) || 1;
-	depthSegments = Math.floor( depthSegments ) || 1;
+		THREE.BufferGeometry.call( this );
 
-	var widthHalf = width / 2;
-	var heightHalf = height / 2;
-	var depthHalf = depth / 2;
+		width = width || 1;
+		height = height || 1;
+		depth = depth || 1;
 
-	var segmentWidth = width / widthSegments;
-	var segmentHeight = height / heightSegments;
-	var segmentDepth = depth / depthSegments;
+		widthSegments = Math.floor( widthSegments ) || 1;
+		heightSegments = Math.floor( heightSegments ) || 1;
+		depthSegments = Math.floor( depthSegments ) || 1;
 
-	var vertices = [];
+		var widthHalf = width / 2;
+		var heightHalf = height / 2;
+		var depthHalf = depth / 2;
 
-	var x = - widthHalf, y = - heightHalf, z = - depthHalf;
+		var segmentWidth = width / widthSegments;
+		var segmentHeight = height / heightSegments;
+		var segmentDepth = depth / depthSegments;
 
-	for ( var i = 0; i <= widthSegments; i ++ ) {
+		var vertices = [];
 
-		vertices.push( x, - heightHalf, - depthHalf, x, heightHalf, - depthHalf );
-		vertices.push( x, heightHalf, - depthHalf, x, heightHalf, depthHalf );
-		vertices.push( x, heightHalf, depthHalf, x, - heightHalf, depthHalf );
-		vertices.push( x, - heightHalf, depthHalf, x, - heightHalf, - depthHalf );
+		var x = - widthHalf, y = - heightHalf, z = - depthHalf;
 
-		x += segmentWidth;
+		for ( var i = 0; i <= widthSegments; i ++ ) {
 
-	}
+			vertices.push( x, - heightHalf, - depthHalf, x, heightHalf, - depthHalf );
+			vertices.push( x, heightHalf, - depthHalf, x, heightHalf, depthHalf );
+			vertices.push( x, heightHalf, depthHalf, x, - heightHalf, depthHalf );
+			vertices.push( x, - heightHalf, depthHalf, x, - heightHalf, - depthHalf );
 
-	for ( var i = 0; i <= heightSegments; i ++ ) {
+			x += segmentWidth;
 
-		vertices.push( - widthHalf, y, - depthHalf, widthHalf, y, - depthHalf );
-		vertices.push( widthHalf, y, - depthHalf, widthHalf, y, depthHalf );
-		vertices.push( widthHalf, y, depthHalf, - widthHalf, y, depthHalf );
-		vertices.push( - widthHalf, y, depthHalf, - widthHalf, y, - depthHalf );
+		}
 
-		y += segmentHeight;
+		for ( var i = 0; i <= heightSegments; i ++ ) {
 
-	}
+			vertices.push( - widthHalf, y, - depthHalf, widthHalf, y, - depthHalf );
+			vertices.push( widthHalf, y, - depthHalf, widthHalf, y, depthHalf );
+			vertices.push( widthHalf, y, depthHalf, - widthHalf, y, depthHalf );
+			vertices.push( - widthHalf, y, depthHalf, - widthHalf, y, - depthHalf );
 
-	for ( var i = 0; i <= depthSegments; i ++ ) {
+			y += segmentHeight;
 
-		vertices.push( - widthHalf, - heightHalf, z, - widthHalf, heightHalf, z );
-		vertices.push( - widthHalf, heightHalf, z, widthHalf, heightHalf, z );
-		vertices.push( widthHalf, heightHalf, z, widthHalf, - heightHalf, z );
-		vertices.push( widthHalf, - heightHalf, z, - widthHalf, - heightHalf, z );
+		}
 
-		z += segmentDepth;
+		for ( var i = 0; i <= depthSegments; i ++ ) {
 
-	}
+			vertices.push( - widthHalf, - heightHalf, z, - widthHalf, heightHalf, z );
+			vertices.push( - widthHalf, heightHalf, z, widthHalf, heightHalf, z );
+			vertices.push( widthHalf, heightHalf, z, widthHalf, - heightHalf, z );
+			vertices.push( widthHalf, - heightHalf, z, - widthHalf, - heightHalf, z );
 
-	this.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+			z += segmentDepth;
 
-};
+		}
 
-THREE.BoxLineGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
-THREE.BoxLineGeometry.prototype.constructor = THREE.BoxLineGeometry;
+		this.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+
+	};
+
+	BoxLineGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
+	BoxLineGeometry.prototype.constructor = BoxLineGeometry;
+
+	exports.BoxLineGeometry = BoxLineGeometry;
+
+}));

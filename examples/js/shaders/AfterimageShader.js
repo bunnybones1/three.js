@@ -1,60 +1,76 @@
 /**
- * @author HypnosNova / https://www.threejs.org.cn/gallery/
- *
- * Afterimage shader
- * I created this effect inspired by a demo on codepen:
- * https://codepen.io/brunoimbrizi/pen/MoRJaN?page=1&
+ * Generated from 'examples/jsm/shaders/AfterimageShader.js'
  */
 
-THREE.AfterimageShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}));
+}(this, function (exports) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author HypnosNova / https://www.threejs.org.cn/gallery/
+	 *
+	 * Afterimage shader
+	 * I created this effect inspired by a demo on codepen:
+	 * https://codepen.io/brunoimbrizi/pen/MoRJaN?page=1&
+	 */
 
-		"damp": { value: 0.96 },
-		"tOld": { value: null },
-		"tNew": { value: null }
 
-	},
 
-	vertexShader: [
+	var AfterimageShader = {
 
-		"varying vec2 vUv;",
+		uniforms: {
 
-		"void main() {",
+			"damp": { value: 0.96 },
+			"tOld": { value: null },
+			"tNew": { value: null }
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		},
 
-		"}"
+		vertexShader: [
 
-	].join( "\n" ),
+			"varying vec2 vUv;",
 
-	fragmentShader: [
+			"void main() {",
 
-		"uniform float damp;",
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-		"uniform sampler2D tOld;",
-		"uniform sampler2D tNew;",
+			"}"
 
-		"varying vec2 vUv;",
+		].join( "\n" ),
 
-		"vec4 when_gt( vec4 x, float y ) {",
+		fragmentShader: [
 
-		"	return max( sign( x - y ), 0.0 );",
+			"uniform float damp;",
 
-		"}",
+			"uniform sampler2D tOld;",
+			"uniform sampler2D tNew;",
 
-		"void main() {",
+			"varying vec2 vUv;",
 
-		"	vec4 texelOld = texture2D( tOld, vUv );",
-		"	vec4 texelNew = texture2D( tNew, vUv );",
+			"vec4 when_gt( vec4 x, float y ) {",
 
-		"	texelOld *= damp * when_gt( texelOld, 0.1 );",
+			"	return max( sign( x - y ), 0.0 );",
 
-		"	gl_FragColor = max(texelNew, texelOld);",
+			"}",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" )
+			"	vec4 texelOld = texture2D( tOld, vUv );",
+			"	vec4 texelNew = texture2D( tNew, vUv );",
 
-};
+			"	texelOld *= damp * when_gt( texelOld, 0.1 );",
+
+			"	gl_FragColor = max(texelNew, texelOld);",
+
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.AfterimageShader = AfterimageShader;
+
+}));

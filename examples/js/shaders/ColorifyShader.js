@@ -1,49 +1,63 @@
 /**
- * @author alteredq / http://alteredqualia.com/
- *
- * Colorify shader
+ * Generated from 'examples/jsm/shaders/ColorifyShader.js'
  */
 
-THREE.ColorifyShader = {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	uniforms: {
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 * Colorify shader
+	 */
 
-		"tDiffuse": { value: null },
-		"color": { value: new THREE.Color( 0xffffff ) }
+	var ColorifyShader = {
 
-	},
+		uniforms: {
 
-	vertexShader: [
+			"tDiffuse": { value: null },
+			"color": { value: new THREE.Color( 0xffffff ) }
 
-		"varying vec2 vUv;",
+		},
 
-		"void main() {",
+		vertexShader: [
 
-		"	vUv = uv;",
-		"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"varying vec2 vUv;",
 
-		"}"
+			"void main() {",
 
-	].join( "\n" ),
+			"	vUv = uv;",
+			"	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
 
-	fragmentShader: [
+			"}"
 
-		"uniform vec3 color;",
-		"uniform sampler2D tDiffuse;",
+		].join( "\n" ),
 
-		"varying vec2 vUv;",
+		fragmentShader: [
 
-		"void main() {",
+			"uniform vec3 color;",
+			"uniform sampler2D tDiffuse;",
 
-		"	vec4 texel = texture2D( tDiffuse, vUv );",
+			"varying vec2 vUv;",
 
-		"	vec3 luma = vec3( 0.299, 0.587, 0.114 );",
-		"	float v = dot( texel.xyz, luma );",
+			"void main() {",
 
-		"	gl_FragColor = vec4( v * color, texel.w );",
+			"	vec4 texel = texture2D( tDiffuse, vUv );",
 
-		"}"
+			"	vec3 luma = vec3( 0.299, 0.587, 0.114 );",
+			"	float v = dot( texel.xyz, luma );",
 
-	].join( "\n" )
+			"	gl_FragColor = vec4( v * color, texel.w );",
 
-};
+			"}"
+
+		].join( "\n" )
+
+	};
+
+	exports.ColorifyShader = ColorifyShader;
+
+}));
